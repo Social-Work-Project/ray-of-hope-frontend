@@ -1,26 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@1,400&display=swap');
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --navy: #0B1F3A;
+  --blue: #1A4A8A;
+  --sky: #2D7DD2;
+  --accent: #F4A435;
+  --accent-soft: #FFF3DC;
+  --gray-50: #F8FAFC;
+  --gray-100: #EEF2F7;
+  --gray-200: #D8E2EF;
+  --gray-400: #8FA3BE;
+  --gray-600: #4A6080;
+  --gray-800: #1E3050;
+  --text: #1A2840;
 }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', system-ui, sans-serif; color: var(--text); background: white; overflow-x: hidden; }
+h1,h2,h3,h4 { font-family: 'Playfair Display', Georgia, serif; line-height: 1.2; }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@keyframes fadeUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+@keyframes shimmer { 0% { background-position:200% 0; } 100% { background-position:-200% 0; } }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+.animate-fade-up { animation: fadeUp 0.8s ease both; }
+.animate-fade-up-1 { animation: fadeUp 0.8s 0.1s ease both; }
+.animate-fade-up-2 { animation: fadeUp 0.8s 0.2s ease both; }
+.animate-fade-up-3 { animation: fadeUp 0.8s 0.3s ease both; }
+.animate-fade-up-4 { animation: fadeUp 0.8s 0.4s ease both; }
+.skeleton { background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:8px; }
+.section-label { display:inline-flex; align-items:center; gap:8px; font-size:0.75rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--sky); margin-bottom:14px; }
+.section-label::before { content:''; display:block; width:24px; height:2px; background:var(--sky); }
+.quote-italic { font-family:'Cormorant Garamond',serif; font-style:italic; }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
