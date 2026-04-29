@@ -1,15 +1,17 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { AdminGuard } from '@/components/Admin/AdminGuard';
 import { AdminSidebar } from '@/components/Admin/AdminSidebar';
 import { useAdminStore } from '@/store/adminStore';
 import { getEvents } from '@/lib/data';
 import { Badge } from '@/components/ui';
 import { toast } from 'sonner';
+import AdminGuard from '@/components/Admin/AdminGuard';
+import { EventModal } from '@/components/Admin/EventModal';
 
 export default function AdminEventsPage() {
   const { events, setEvents, deleteEvent, updateEvent } = useAdminStore();
   const [search, setSearch] = useState('');
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => { getEvents().then(setEvents); }, []);
 
@@ -25,7 +27,9 @@ export default function AdminEventsPage() {
     updateEvent(id, { status: next });
     toast.success(`Event ${next === 'published' ? 'published' : 'unpublished'}`);
   };
-
+const handleSave = () => {
+    
+}
   return (
     <AdminGuard>
       <div className="flex min-h-screen">
@@ -41,7 +45,7 @@ export default function AdminEventsPage() {
                 <div className="flex gap-2">
                   <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search events..."
                     className="px-3 py-2 border rounded-lg text-sm outline-none" style={{ borderColor: 'var(--gray-200)', width: 200 }} />
-                  <button onClick={() => toast.info('Add Event form coming soon!')}
+                  <button onClick={() => setShowModal(true)}
                     className="px-4 py-2 rounded-lg text-sm font-semibold text-white" style={{ background: 'var(--blue)' }}>
                     + Add Event
                   </button>
@@ -82,6 +86,7 @@ export default function AdminEventsPage() {
             </div>
           </div>
         </main>
+        {showModal && <EventModal isOpen onSave={handleSave} onClose={() => setShowModal(false)} />}
       </div>
     </AdminGuard>
   );

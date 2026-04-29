@@ -2,16 +2,18 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Event, VolunteerApplication, DonationInquiry, Testimonial } from '@/types';
+import { AuthService } from '@/services/authService';
 
 interface AdminStore {
   isAuthenticated: boolean;
+  loading: boolean;
   events: Event[];
   volunteers: VolunteerApplication[];
   donations: DonationInquiry[];
   testimonials: Testimonial[];
   unreadMessages: number;
 
-  login: (user: string, pass: string) => boolean;
+  login: (user: string, pass: string) => Promise<boolean>;
   logout: () => void;
 
   setEvents: (events: Event[]) => void;
@@ -31,20 +33,44 @@ export const useAdminStore = create<AdminStore>()(
   persist(
     (set, get) => ({
       isAuthenticated: false,
+      loading: false,
       events: [],
       volunteers: [],
       donations: [],
       testimonials: [],
       unreadMessages: 7,
 
-      login: (user, pass) => {
-        if (user === 'admin' && pass === 'admin123') {
-          set({ isAuthenticated: true });
-          return true;
-        }
+      login: async (email, pass) => {
+       try {
+        set({ loading: true });
+        await AuthService.login({ email: email, password: pass });
+        set({ isAuthenticated: true, loading: false });
+        return true;
+       } catch(error) {
+        set({
+          loading: false,
+          isAuthenticated: false,
+        })
         return false;
+       }
       },
-      logout: () => set({ isAuthenticated: false }),
+      logout: () => async () => {
+        try {
+          await AuthService.logout();
+          set({ isAuthenticated: false });
+        } catch (error) {
+          console.error('Error occurred while logging out:', error);
+        }
+      },
+
+      checkAuth: async () => {
+        try {
+          const res = await AuthService.checkAuth();
+          set({ isAuthenticated: !!res });
+        } catch (error) {
+          set({ isAuthenticated: false });
+        }
+      },
 
       setEvents: (events) => set({ events }),
       addEvent: (event) => set(s => ({ events: [...s.events, event] })),

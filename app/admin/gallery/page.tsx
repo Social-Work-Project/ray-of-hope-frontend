@@ -1,8 +1,8 @@
 'use client';
 import Image from 'next/image';
-import { AdminGuard } from '@/components/Admin/AdminGuard';
 import { AdminSidebar } from '@/components/Admin/AdminSidebar';
 import { toast } from 'sonner';
+import AdminGuard from '@/components/Admin/AdminGuard';
 
 const images = [
   { src: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=300&q=80", label: "Community Work" },

@@ -1,5 +1,5 @@
+"use client";
 import Image from 'next/image';
-import Link from 'next/link';
 import { PageHero, Card, SectionHeader } from '@/components/ui';
 
 const timeline = [
@@ -13,6 +13,7 @@ const timeline = [
 ];
 
 export default function AboutPage() {
+    
   return (
     <div className='pt-18.25'>
       <PageHero breadcrumb="About Us" title="About Nagarkata Ray of Hope Society"
@@ -22,29 +23,29 @@ export default function AboutPage() {
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
           <div>
             <div className="section-label">Our Foundation</div>
-            <h2 className="text-3xl font-black mb-5" style={{ color: "var(--navy)" }}>Born from Compassion in Dooars Valley</h2>
-            <p className="text-base leading-loose mb-4" style={{ color: "var(--gray-600)" }}>
+            <h2 className="text-3xl font-black mb-5 text-(--navy)" >Born from Compassion in Dooars Valley</h2>
+            <p className="text-base leading-loose mb-4 text-(--gray-600)" >
               Nagarkata Ray of Hope Society was founded in 2008 by <strong>Arjun Biswakarma</strong> at Sukhani Busty, P.O./P.S. Nagrakata, District Jalpaiguri, West Bengal. When it was started it was just like a tiny little dew drop with the goal to reach out to the unprivileged, left out with no one to help, support and hope.
             </p>
-            <p className="text-base leading-loose mb-6" style={{ color: "var(--gray-600)" }}>
+            <p className="text-base leading-loose mb-6 text-(--gray-600)">
               Mr. Biswakarma converted part of his own home into the office and first centre. Today it is registered under West Bengal Society Act 1961 (Reg. No. S/IL/54901) and NGO Darpan (NITI Aayog): DARPAN ID WB/2024/0416685. The society runs entirely on public donations.
             </p>
             <div className="space-y-2.5">
               {["Registered: West Bengal Society Act 1961", "NGO Darpan ID: WB/2024/0416685 (Active)", "Registration No: S/IL/54901 · Date: 16 Sep 2008", "7 Board Members · Jalpaiguri, West Bengal"].map((item, i) => (
                 <div key={i} className="flex gap-3 items-center text-sm" style={{ color: "var(--gray-600)" }}>
-                  <span className="text-base" style={{ color: "var(--sky)" }}>✓</span> {item}
+                  <span className="text-base text-(--sky)">✓</span> {item}
                 </div>
               ))}
             </div>
           </div>
           <div>
             <div className="rounded-2xl overflow-hidden shadow-xl mb-5">
-              <Image src="/images/dooars.jpeg" alt="Dooars" width={700} height={280} className="w-full object-cover" style={{ height: 280 }} />
+              <Image src="/images/dooars.jpeg" alt="Dooars" width={700} height={280} className="w-full object-cover h-70 " />
             </div>
             <div className="grid grid-cols-2 gap-4">
               {[{ n: "16+", l: "Children Housed" }, { n: "500+", l: "Families Aided" }].map((s, i) => (
                 <Card key={i} className="p-6 text-center" hover={false}>
-                  <div className="text-3xl font-black mb-1 text-blue-900" style={{ fontFamily: "'Playfair Display',serif" }}>{s.n}</div>
+                  <div className="text-3xl font-black mb-1 text-blue-900 font-['Playfair_Display',serif]" >{s.n}</div>
                   <div className="text-sm text-gray-600" >{s.l}</div>
                 </Card>
               ))}
@@ -53,7 +54,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="py-20" style={{ background: "var(--gray-50)" }}>
+      <section className="py-20 bg-(--gray-50)" >
         <div className="max-w-7xl mx-auto px-6">
           <SectionHeader label="Purpose" title="Mission & Vision" center />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

@@ -1,11 +1,11 @@
 'use client';
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { AdminGuard } from '@/components/Admin/AdminGuard';
 import { AdminSidebar } from '@/components/Admin/AdminSidebar';
 import { useAdminStore } from '@/store/adminStore';
 import { getEvents, getVolunteerApplications, getDonationInquiries, getTestimonials } from '@/lib/data';
 import { Badge } from '@/components/ui';
+import AdminGuard from '@/components/Admin/AdminGuard';
 
 const stats = [
   { label: 'Total Events', value: '5', delta: '↑ 2 this year', color: 'var(--blue)' },

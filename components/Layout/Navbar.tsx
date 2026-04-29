@@ -92,7 +92,7 @@ export function Navbar() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="fixed top-[73px] left-0 right-0 z-40 bg-white border-b shadow-lg lg:hidden">
+        <div className="fixed top-18.25 left-0 right-0 z-40 bg-white border-b shadow-lg lg:hidden">
           <div className="flex flex-col p-4 gap-1">
             {navLinks.map(l => (
               <Link

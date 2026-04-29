@@ -1,10 +1,10 @@
 'use client';
 import { useEffect } from 'react';
-import { AdminGuard } from '@/components/Admin/AdminGuard';
 import { AdminSidebar } from '@/components/Admin/AdminSidebar';
 import { useAdminStore } from '@/store/adminStore';
 import { getDonationInquiries } from '@/lib/data';
 import { Badge } from '@/components/ui';
+import AdminGuard from '@/components/Admin/AdminGuard';
 
 export default function AdminDonationsPage() {
   const { donations, setDonations } = useAdminStore();

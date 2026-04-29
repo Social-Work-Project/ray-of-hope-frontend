@@ -1,11 +1,12 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { AdminGuard } from '@/components/Admin/AdminGuard';
+
 import { AdminSidebar } from '@/components/Admin/AdminSidebar';
 import { useAdminStore } from '@/store/adminStore';
 import { getVolunteerApplications } from '@/lib/data';
 import { Badge } from '@/components/ui';
 import { toast } from 'sonner';
+import AdminGuard from '@/components/Admin/AdminGuard';
 
 export default function AdminVolunteersPage() {
   const { volunteers, setVolunteers, updateVolunteerStatus } = useAdminStore();

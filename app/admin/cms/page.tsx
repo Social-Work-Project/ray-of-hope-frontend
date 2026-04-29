@@ -1,8 +1,8 @@
 'use client';
 import { useState } from 'react';
-import { AdminGuard } from '@/components/Admin/AdminGuard';
 import { AdminSidebar } from '@/components/Admin/AdminSidebar';
 import { toast } from 'sonner';
+import AdminGuard from '@/components/Admin/AdminGuard';
 
 const inputCls = "w-full px-4 py-3 border rounded-xl text-sm outline-none transition-all focus:ring-2 focus:ring-blue-200";
 

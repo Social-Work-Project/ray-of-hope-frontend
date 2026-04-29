@@ -1,11 +1,12 @@
 'use client';
 import { useEffect } from 'react';
-import { AdminGuard } from '@/components/Admin/AdminGuard';
+
 import { AdminSidebar } from '@/components/Admin/AdminSidebar';
 import { useAdminStore } from '@/store/adminStore';
 import { getTestimonials } from '@/lib/data';
 import { Badge } from '@/components/ui';
 import { toast } from 'sonner';
+import AdminGuard from '@/components/Admin/AdminGuard';
 
 export default function AdminTestimonialsPage() {
   const { testimonials, setTestimonials, updateTestimonialStatus } = useAdminStore();

@@ -1,4 +1,6 @@
+"use client"
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 
 const quickLinks = [
@@ -18,6 +20,10 @@ const involvedLinks = [
 ];
 
 export function Footer() {
+    const pathname = usePathname();
+    const isAdmin = pathname.startsWith('/admin');
+
+  if (isAdmin) return null;
   return (
     <footer style={{ background: 'var(--navy)', color: 'rgba(255,255,255,0.7)' }} className="pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-6">

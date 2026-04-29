@@ -1,9 +1,10 @@
 'use client';
 import Image from 'next/image';
-import { AdminGuard } from '@/components/Admin/AdminGuard';
+
 import { AdminSidebar } from '@/components/Admin/AdminSidebar';
 import { Badge } from '@/components/ui';
 import { toast } from 'sonner';
+import AdminGuard from '@/components/Admin/AdminGuard';
 
 const teamData = [
   { id: '1', name: 'Arjun Biswakarma', role: 'Founder & Secretary', since: '16 Sep 2008', contact: '+91 9933071201', photo: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=100&q=80' },
@@ -52,7 +53,7 @@ export default function AdminTeamPage() {
                         <td className="px-5 py-3">
                           <div className="flex items-center gap-3">
                             <Image src={m.photo} alt={m.name} width={32} height={32}
-                              className="rounded-full object-cover flex-shrink-0"
+                              className="rounded-full object-cover shrink-0"
                               style={{ width: 32, height: 32 }} />
                             <span className="font-medium whitespace-nowrap" style={{ color: 'var(--text)' }}>{m.name}</span>
                           </div>
