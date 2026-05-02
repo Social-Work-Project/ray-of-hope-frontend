@@ -87,3 +87,21 @@ export interface ContactMessage {
   read: boolean;
   createdAt: string;
 }
+
+
+export interface EventResponse {
+  reference_id: string;
+  name: string;
+  description: string;
+  category: string;
+  logo: string;
+  event_date: string;
+  start_time: string;
+  end_time: string;
+  location: string;
+  organizer_name: string;
+  volunteers_needed: number;
+  registered_volunterrs_count: number;
+  status: 'published' | 'draft';
+  created_at: string;
+}
