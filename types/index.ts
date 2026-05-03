@@ -154,3 +154,17 @@ export interface TeamResponse {
   is_active: boolean;
   order?: number;
 }
+
+export interface User {
+  reference_id: string;
+  full_name: string;
+  email: string;
+  is_admin: boolean;
+  is_banned: boolean;
+  avatar?: string;
+  date_joined: string;
+}
+
+export interface GalleryResponse {
+  
+}
