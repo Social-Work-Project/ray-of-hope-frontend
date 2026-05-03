@@ -352,7 +352,7 @@ export function GalleryModal({ isOpen, onClose, item, onSave, fetchCategories }:
         if (isDirty && !confirm('Unsaved changes. Close anyway?')) return;
         onClose();
       }}
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-y-auto"
+      className="fixed inset-0 z-9999 flex items-center justify-center p-4 overflow-y-auto"
       style={{ background: 'rgba(11,31,58,0.65)', backdropFilter: 'blur(8px)' }}
     >
       <div

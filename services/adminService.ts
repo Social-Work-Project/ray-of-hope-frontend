@@ -31,4 +31,6 @@ export const AdminService = {
     }),
     updateGallery: async (id: string, data: { category_name: string }) => api.put(`/gallery/categories/${id}/update/`, data),
     deleteGallery: async (id: string) => api.delete(`/events/gallery-category/${id}/delete/`),
+
+    
 }

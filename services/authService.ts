@@ -7,4 +7,8 @@ export const AuthService = {
     register: async (data: any) => api.post("/auth/register/", data),
     logout: async () => api.post("/auth/logout/"),
 
+    //profile
+    getProfile: async () => api.get("/auth/profile/"),
+    changeUserPassword: async (data: { old_password: string, new_password: string, confirm_password: string }) => api.post("/auth/change-password/", data),
+
 }

@@ -121,6 +121,11 @@ export function AdminSidebar() {
         >
           Account
         </div>
+        <Link href="/admin/settings">
+          <button className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-left transition-all hover:bg-white/8" style={{ color: "rgba(255,255,255,0.6)" }}>
+            <span>⚙️</span> Settings
+          </button>
+        </Link>
         <button
           onClick={handleLogout}
           className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-left transition-all hover:bg-white/8"
@@ -128,7 +133,6 @@ export function AdminSidebar() {
         >
           <span>🚪</span> Logout
         </button>
-       
       </nav>
     </aside>
   );
