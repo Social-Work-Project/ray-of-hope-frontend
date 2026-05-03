@@ -70,7 +70,7 @@ export default function EventDetailPage() {
           <div className="lg:col-span-2">
             <div className="rounded-2xl overflow-hidden mb-8 shadow-lg">
               <Image
-                src={event.logo}
+                src={event.logo || "/images/event-placeholder.jpg"}
                 alt={event.name}
                 width={800}
                 height={360}

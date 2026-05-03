@@ -1,5 +1,5 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { AdminSidebar } from '@/components/Admin/AdminSidebar';
 import { useAdminStore } from '@/store/adminStore';
@@ -7,10 +7,18 @@ import { getTestimonials } from '@/lib/data';
 import { Badge } from '@/components/ui';
 import { toast } from 'sonner';
 import AdminGuard from '@/components/Admin/AdminGuard';
+import TestimonialModal from '@/components/Admin/TestimonialModal';
 
 export default function AdminTestimonialsPage() {
+  const [openModal, setOpenModal] = useState(false);
   const { testimonials, setTestimonials, updateTestimonialStatus } = useAdminStore();
   useEffect(() => { getTestimonials().then(setTestimonials); }, []);
+
+  const handleSave = (formData: FormData) => {
+    // Implementation for saving testimonial
+    toast.success('Testimonial saved! (This is a placeholder action.)');
+    setOpenModal(false);
+  };
 
   return (
     <AdminGuard>
@@ -24,8 +32,8 @@ export default function AdminTestimonialsPage() {
             <div className="bg-white rounded-xl shadow-sm border overflow-hidden" style={{ borderColor: 'var(--gray-100)' }}>
               <div className="px-5 py-4 border-b flex justify-between items-center" style={{ borderColor: 'var(--gray-100)' }}>
                 <h3 className="font-bold text-sm" style={{ color: 'var(--navy)' }}>All Testimonials ({testimonials.length})</h3>
-                <button onClick={() => toast.info('Add testimonial coming soon!')}
-                  className="px-4 py-2 rounded-lg text-sm font-semibold text-white" style={{ background: 'var(--blue)' }}>
+                <button onClick={() => setOpenModal(true)}
+                  className="px-4 py-2 rounded-lg text-sm font-semibold bg-(--blue) text-white cursor-pointer hover:bg-blue-800/80 transition-all">
                   + Add Testimonial
                 </button>
               </div>
@@ -60,6 +68,7 @@ export default function AdminTestimonialsPage() {
               </table>
             </div>
           </div>
+          {openModal && <TestimonialModal isOpen={openModal} onClose={() => setOpenModal(false)} onSave={handleSave} />}
         </main>
       </div>
     </AdminGuard>

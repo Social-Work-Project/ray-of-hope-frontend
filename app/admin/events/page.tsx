@@ -7,11 +7,15 @@ import AdminGuard from "@/components/Admin/AdminGuard";
 import { EventModal } from "@/components/Admin/EventModal";
 import { AdminService } from "@/services/adminService";
 import { EventResponse } from "@/types";
+import DeleteConfirmModal from "@/components/common/DeleteDialogModal";
 
 export default function AdminEventsPage() {
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [events, setEvents] = useState<EventResponse[]>([]);
+  const [selectedEventId, setSelectedEventId] = useState<string>("");
+  const [loading, setLoading] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<EventResponse | null>(
     null,
   ); // ← track which event is being edited
@@ -34,12 +38,17 @@ export default function AdminEventsPage() {
   );
 
   const handleDelete = async (id: string) => {
+    setLoading(true)
     try {
       await AdminService.deleteEvent(id);
       setEvents(events.filter((e) => e.reference_id !== id));
       toast.success("Event deleted!");
     } catch (error) {
       toast.error("Failed to delete event. Please try again.");
+    } finally {
+      setLoading(false);
+      setShowDeleteModal(false);
+      setSelectedEventId("");
     }
   };
 
@@ -115,8 +124,8 @@ export default function AdminEventsPage() {
                   />
                   <button
                     onClick={handleAddNew}
-                    className="px-4 py-2 rounded-lg text-sm font-semibold text-white"
-                    style={{ background: "var(--blue)" }}
+                    className="px-4 py-2 rounded-lg text-sm font-semibold text-white cursor-pointer bg-(--blue) hover:bg-blue-800/80 transition-all"
+                    disabled={loading}
                   >
                     + Add Event
                   </button>
@@ -197,7 +206,10 @@ export default function AdminEventsPage() {
                               Edit
                             </button>
                             <button
-                              onClick={() => handleDelete(e.reference_id)}
+                              onClick={() => {
+                                setSelectedEventId(e.reference_id);
+                                setShowDeleteModal(true);
+                              }}
                               className="text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all hover:bg-red-50 cursor-pointer"
                               style={{
                                 borderColor: "#f87171",
@@ -206,6 +218,17 @@ export default function AdminEventsPage() {
                             >
                               Delete
                             </button>
+
+                            <DeleteConfirmModal 
+                            isOpen={showDeleteModal}
+                            onClose={() => setShowDeleteModal(false)}
+                            onConfirm={() => handleDelete(selectedEventId)}
+                            title="Confirm Deletion"
+                            description={`Are you sure you want to delete the event "${e.name}"? This action cannot be undone.`}
+                            itemName={e.name}
+                            isLoading={loading}
+
+                            />
                           </div>
                         </td>
                       </tr>
@@ -223,6 +246,7 @@ export default function AdminEventsPage() {
             event={selectedEvent} // null → create mode, EventResponse → edit mode
             onSave={handleSave}
             onClose={handleClose}
+            
           />
         )}
       </div>

@@ -6,6 +6,7 @@ import { EventResponse } from '@/types';
 import { AdminService } from '@/services/adminService';
 import { useRouter } from 'next/navigation';
 import { formatToAmPm } from '@/helpers/timeFormatter';
+import { WebsiteService } from '@/services/websiteService';
 
 function parseEventDate(dateStr: string) {
   const date = new Date(dateStr);
@@ -22,9 +23,8 @@ export default function EventsPage() {
   useEffect(() => {
     async function fetchEvents() {
       try {
-        const res = await AdminService.getEvents();
-        const published = (res.data.results || [])
-        setEvents(published);
+        const res = await WebsiteService.getAllEvents();
+        setEvents(res.data.results || [])
       } catch (error) {
         console.error("Error fetching events:", error);
       }
@@ -32,7 +32,7 @@ export default function EventsPage() {
     fetchEvents();
   }, [router]);
 
-  const filteredEvents = events.filter(e => e.status === 'published');
+
 
   return (
     <div className='pt-18.25'>
@@ -43,7 +43,7 @@ export default function EventsPage() {
           <div className="section-label">{new Date().getFullYear()} Calendar</div>
           <h2 className="text-3xl font-black mb-10" style={{ color: "var(--navy)" }}>Upcoming Events</h2>
           <div className="flex flex-col gap-5 max-w-4xl">
-            {filteredEvents.map(e => {
+            {events.map(e => {
               const { day, month } = parseEventDate(e.event_date);
               return (
                 <Card key={e.reference_id} className="p-0 overflow-hidden">

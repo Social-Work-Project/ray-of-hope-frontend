@@ -21,4 +21,14 @@ export const AdminService = {
     getVolunteers: async () => api.get("/volunteers/applications/"),
     updateVolunteerStatus: async (id: string, status: 'accepted' | 'rejected') => api.patch(`/volunteers/application/${id}/status/update/`, { status }),
     deleteVolunteer: async (id: string) => api.delete(`/volunteers/${id}/delete/`),
+
+
+    //Gallery
+    getGalleryCategories: async () => api.get("/events/gallery-category/list/"),
+    getGalleryItems: async () => api.get("/events/gallery/list/"),
+    createGallery: async (data: FormData) => api.post("/events/gallery/create/", data, {
+        headers: { "Content-Type": "multipart/form-data" },
+    }),
+    updateGallery: async (id: string, data: { category_name: string }) => api.put(`/gallery/categories/${id}/update/`, data),
+    deleteGallery: async (id: string) => api.delete(`/events/gallery-category/${id}/delete/`),
 }

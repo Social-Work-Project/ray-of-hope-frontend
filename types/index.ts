@@ -130,3 +130,27 @@ export type VolunteerResponse = {
   skills: string;
   areas_of_interest: AreaOfInterest[];
 };
+
+export interface TestimonialResponse {
+  reference_id: string;
+  name: string;
+  role: string;
+  message: string;
+  location: string;
+  is_active: boolean;
+}
+
+
+export interface TeamResponse {
+  reference_id: string;
+  name: string;
+  role: string;
+  designation: string;
+  joined_date: string;
+  bio: string;
+  image?: string;
+  contact?: string;
+  location?: string;
+  is_active: boolean;
+  order?: number;
+}

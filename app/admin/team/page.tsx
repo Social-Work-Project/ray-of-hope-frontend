@@ -5,6 +5,8 @@ import { AdminSidebar } from '@/components/Admin/AdminSidebar';
 import { Badge } from '@/components/ui';
 import { toast } from 'sonner';
 import AdminGuard from '@/components/Admin/AdminGuard';
+import { useState } from 'react';
+import { TeamMembersModal } from '@/components/Admin/TeamMembersModal';
 
 const teamData = [
   { id: '1', name: 'Arjun Biswakarma', role: 'Founder & Secretary', since: '16 Sep 2008', contact: '+91 9933071201', photo: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=100&q=80' },
@@ -17,6 +19,14 @@ const teamData = [
 ];
 
 export default function AdminTeamPage() {
+    const [openModal, setOpenModal] = useState(false);
+  
+  
+    const handleSave = (formData: FormData) => {
+      // Implementation for saving testimonial
+      toast.success('Testimonial saved! (This is a placeholder action.)');
+      setOpenModal(false);
+    };
   return (
     <AdminGuard>
       <div className="flex min-h-screen">
@@ -30,9 +40,9 @@ export default function AdminTeamPage() {
               <div className="px-5 py-4 border-b flex justify-between items-center" style={{ borderColor: 'var(--gray-100)' }}>
                 <h3 className="font-bold text-sm" style={{ color: 'var(--navy)' }}>Governing Body ({teamData.length} members)</h3>
                 <button
-                  onClick={() => toast.info('Add member form coming soon!')}
-                  className="px-4 py-2 rounded-lg text-sm font-semibold text-white"
-                  style={{ background: 'var(--blue)' }}>
+                  onClick={() => setOpenModal(true)}
+                  className="px-4 py-2 rounded-lg text-sm font-semibold text-white cursor-pointer bg-(--blue) hover:bg-blue-800/80 transition-all"
+                  >
                   + Add Member
                 </button>
               </div>
@@ -62,12 +72,18 @@ export default function AdminTeamPage() {
                         <td className="px-5 py-3 whitespace-nowrap" style={{ color: 'var(--gray-600)' }}>{m.since}</td>
                         <td className="px-5 py-3 whitespace-nowrap" style={{ color: 'var(--gray-600)' }}>{m.contact}</td>
                         <td className="px-5 py-3"><Badge variant="green">Active</Badge></td>
-                        <td className="px-5 py-3">
+                        <td className="px-5 py-3 flex gap-2">
                           <button
                             onClick={() => toast.info(`Edit form for ${m.name} coming soon!`)}
-                            className="text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all hover:bg-blue-50"
+                            className="text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all hover:bg-blue-50 cursor-pointer"
                             style={{ borderColor: 'var(--sky)', color: 'var(--sky)' }}>
                             Edit
+                          </button>
+                          <button
+                            onClick={() => toast.error(`Delete action for ${m.name} is not implemented yet!`)}
+                            className="text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all hover:bg-red-50 cursor-pointer"
+                            style={{ borderColor: '#f87171', color: '#dc2626' }}>
+                            Delete
                           </button>
                         </td>
                       </tr>
@@ -77,6 +93,7 @@ export default function AdminTeamPage() {
               </div>
             </div>
           </div>
+          {openModal && <TeamMembersModal isOpen={openModal} onClose={() => setOpenModal(false)} onSave={handleSave} />}
         </main>
       </div>
     </AdminGuard>

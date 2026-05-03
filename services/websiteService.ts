@@ -7,4 +7,5 @@ export const WebsiteService = {
 
     //events
     getEventFromId: async (id: string) => api.get(`/events/${id}/`),
+    getAllEvents: async () => api.get("/events/published-events/list/"),
 }

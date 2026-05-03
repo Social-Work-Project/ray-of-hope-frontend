@@ -10,9 +10,9 @@ import {
   Eye, EyeOff, Tag, Phone, Mail,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import type { Event, EventResponse } from '@/types';
-import { ca } from 'zod/locales';
-import { AdminService } from '@/services/adminService';
+import type { EventResponse } from '@/types';
+import { Lbl, Err, inp, Section } from './common/UiHelpers';
+
 
 // ── ZOD SCHEMA ───────────────────────────────────────────────────
 const scheduleItemSchema = z.object({
@@ -83,37 +83,7 @@ function normaliseTime(t: string): string {
 
 function uid() { return Math.random().toString(36).slice(2, 9); }
 
-// ── SMALL UI HELPERS ─────────────────────────────────────────────
-const inp =
-  'w-full px-4 py-2.5 border rounded-xl text-sm outline-none transition-all focus:ring-2 focus:ring-blue-200 bg-white';
 
-function Err({ msg }: { msg?: string }) {
-  if (!msg) return null;
-  return <p className="text-xs mt-1 font-medium text-red-500">{msg}</p>;
-}
-
-function Lbl({ children, required }: { children: React.ReactNode; required?: boolean }) {
-  return (
-    <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: 'var(--gray-800)' }}>
-      {children}
-      {required && <span className="text-red-500 ml-0.5">*</span>}
-    </label>
-  );
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <div className="flex items-center gap-3 mb-4">
-        <span className="text-xs font-black uppercase tracking-widest" style={{ color: 'var(--sky)' }}>
-          {title}
-        </span>
-        <div className="flex-1 h-px" style={{ background: 'var(--gray-100)' }} />
-      </div>
-      <div className="space-y-4">{children}</div>
-    </div>
-  );
-}
 
 // ── IMAGE UPLOAD ──────────────────────────────────────────────────
 interface ImageUploadProps {
@@ -408,8 +378,8 @@ export function EventModal({ isOpen, onClose, event, onSave }: EventModalProps) 
               </p>
             </div>
           </div>
-          <button type="button" onClick={onClose} className="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-gray-100" aria-label="Close">
-            <X className="w-5 h-5" style={{ color: 'var(--gray-600)' }} />
+          <button type="button" onClick={onClose} className="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-red-600  hover:text-white cursor-pointer" aria-label="Close">
+            <X className="w-5 h-5" />
           </button>
         </div>
 
@@ -733,7 +703,7 @@ export function EventModal({ isOpen, onClose, event, onSave }: EventModalProps) 
               <button
                 type="button"
                 onClick={onClose}
-                className="px-5 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all hover:bg-gray-100"
+                className="px-5 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all hover:bg-gray-100 cursor-pointer"
                 style={{ borderColor: 'var(--gray-200)', color: 'var(--gray-600)' }}
               >
                 Cancel
@@ -741,7 +711,7 @@ export function EventModal({ isOpen, onClose, event, onSave }: EventModalProps) 
               <button
                 type="submit"
                 disabled={saving}
-                className="px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0"
+                className="px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0 cursor-pointer"
                 style={{ background: isEdit ? 'var(--accent)' : 'var(--blue)', color: isEdit ? 'var(--navy)' : 'white' }}
               >
                 {saving ? (
