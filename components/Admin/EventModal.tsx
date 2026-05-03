@@ -226,7 +226,7 @@ export function EventModal({ isOpen, onClose, event, onSave }: EventModalProps) 
     reset,
     watch,
     setValue,
-    formState: { errors, isDirty },
+    formState: { errors, isDirty, dirtyFields },
   } = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
     defaultValues: {
@@ -316,41 +316,68 @@ export function EventModal({ isOpen, onClose, event, onSave }: EventModalProps) 
   }, [isOpen]);
 
   // ── SUBMIT ───────────────────────────────────────────────────
-  const onSubmit =  (data: EventFormData) => {
-    setSaving(true);
-    try {
+ const onSubmit = (data: EventFormData) => {
+  setSaving(true);
+  try {
     const fd = new FormData();
-    fd.append('name', data.name);
-    fd.append('description', data.description);
-    fd.append('category', data.category);
-    fd.append('event_date', data.event_date);                 // YYYY-MM-DD
-    fd.append('start_time', toTimeSeconds(data.start_time)); // HH:MM:SS
-    fd.append('end_time', toTimeSeconds(data.end_time));     // HH:MM:SS
-    fd.append('location', data.location);
-    fd.append('organizer_name', data.organizer_name);
-    fd.append('phone_number', data.phone_number);
-    fd.append('email', data.email);
-    fd.append('volunteers_needed', String(data.volunteers_needed));
-    fd.append('status', data.status);
-    fd.append('schedules', JSON.stringify(
-      data.schedules.map(s => ({ ...s, time: normaliseTime(s.time) }))
-    ));
 
-    if (logoFile) {
-      fd.append('logo', logoFile, logoFile.name);     // File object
-    } else if ((event as any)?.logo) {
-      fd.append('logo', (event as any).logo);          // Keep existing URL
+    if (isEdit) {
+      // ── PATCH: only append fields that were actually changed ──
+      const dirty = dirtyFields as Partial<Record<keyof EventFormData, boolean | object[]>>;
+
+      if (dirty.name)               fd.append('name', data.name);
+      if (dirty.description)        fd.append('description', data.description);
+      if (dirty.category)           fd.append('category', data.category);
+      if (dirty.event_date)         fd.append('event_date', data.event_date);
+      if (dirty.start_time)         fd.append('start_time', toTimeSeconds(data.start_time));
+      if (dirty.end_time)           fd.append('end_time', toTimeSeconds(data.end_time));
+      if (dirty.location)           fd.append('location', data.location);
+      if (dirty.organizer_name)     fd.append('organizer_name', data.organizer_name);
+      if (dirty.phone_number)       fd.append('phone_number', data.phone_number);
+      if (dirty.email)              fd.append('email', data.email);
+      if (dirty.volunteers_needed)  fd.append('volunteers_needed', String(data.volunteers_needed));
+      if (dirty.status)             fd.append('status', data.status);
+
+      // schedules: dirtyFields.schedules is an array of objects when any slot changed
+      if (dirty.schedules) {
+        fd.append('schedules', JSON.stringify(
+          data.schedules.map(s => ({ ...s, time: normaliseTime(s.time) }))
+        ));
+      }
+
+      // logo: only send if user picked a new file
+      if (logoFile) {
+        fd.append('logo', logoFile, logoFile.name);
+      }
+
+    } else {
+      // ── POST: send everything ──
+      fd.append('name', data.name);
+      fd.append('description', data.description);
+      fd.append('category', data.category);
+      fd.append('event_date', data.event_date);
+      fd.append('start_time', toTimeSeconds(data.start_time));
+      fd.append('end_time', toTimeSeconds(data.end_time));
+      fd.append('location', data.location);
+      fd.append('organizer_name', data.organizer_name);
+      fd.append('phone_number', data.phone_number);
+      fd.append('email', data.email);
+      fd.append('volunteers_needed', String(data.volunteers_needed));
+      fd.append('status', data.status);
+      fd.append('schedules', JSON.stringify(
+        data.schedules.map(s => ({ ...s, time: normaliseTime(s.time) }))
+      ));
+      if (logoFile) fd.append('logo', logoFile, logoFile.name);
     }
-    setSaving(false);
+
     onSave(fd);
-    toast.success(isEdit ? `"${data.name}" updated!` : `"${data.name}" created!`);
     onClose();
   } catch (err) {
-  toast.error('An error occurred while saving the event. Please try again.');
-  setSaving(false);
-}
-
+    toast.error('An error occurred while saving the event. Please try again.');
+  } finally {
+    setSaving(false);
   }
+};
 
   if (!isOpen) return null;
 
@@ -358,7 +385,7 @@ export function EventModal({ isOpen, onClose, event, onSave }: EventModalProps) 
     <div
       ref={overlayRef}
       onClick={handleOverlayClick}
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-y-auto"
+      className="fixed inset-0 z-9999 flex items-center justify-center p-4 overflow-y-auto"
       style={{ background: 'rgba(11,31,58,0.6)', backdropFilter: 'blur(6px)' }}
     >
       <div
@@ -367,7 +394,7 @@ export function EventModal({ isOpen, onClose, event, onSave }: EventModalProps) 
         style={{ maxHeight: '92vh', display: 'flex', flexDirection: 'column' }}
       >
         {/* ── HEADER ── */}
-        <div className="flex items-center justify-between px-7 py-5 border-b flex-shrink-0" style={{ borderColor: 'var(--gray-100)' }}>
+        <div className="flex items-center justify-between px-7 py-5 border-b shrink-0" style={{ borderColor: 'var(--gray-100)' }}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: isEdit ? '#FFF3DC' : '#EEF2F7' }}>
               <CalendarDays className="w-5 h-5" style={{ color: isEdit ? '#b87a10' : 'var(--blue)' }} />
@@ -629,7 +656,7 @@ export function EventModal({ isOpen, onClose, event, onSave }: EventModalProps) 
                       style={{ background: 'var(--gray-50)', borderColor: 'var(--gray-100)' }}
                     >
                       <div
-                        className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0 mt-2"
+                        className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-black shrink-0 mt-2"
                         style={{ background: 'var(--blue)', color: 'white' }}
                       >
                         {index + 1}
@@ -653,7 +680,7 @@ export function EventModal({ isOpen, onClose, event, onSave }: EventModalProps) 
                         />
                         <Err msg={errors.schedules?.[index]?.title?.message} />
                       </div>
-                      <div className="flex flex-col gap-1 flex-shrink-0 mt-1">
+                      <div className="flex flex-col gap-1 shrink-0 mt-1">
                         <button
                           type="button"
                           onClick={() => index > 0 && move(index, index - 1)}
@@ -696,7 +723,7 @@ export function EventModal({ isOpen, onClose, event, onSave }: EventModalProps) 
 
           {/* ── FOOTER ── */}
           <div
-            className="px-7 py-4 border-t flex items-center justify-between gap-3 flex-shrink-0"
+            className="px-7 py-4 border-t flex items-center justify-between gap-3 shrink-0"
             style={{ borderColor: 'var(--gray-100)', background: 'var(--gray-50)', borderRadius: '0 0 1rem 1rem' }}
           >
             <p className="text-xs" style={{ color: 'var(--gray-400)' }}>

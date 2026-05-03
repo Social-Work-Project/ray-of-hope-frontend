@@ -2,27 +2,42 @@
 import { useEffect, useState } from 'react';
 
 import { AdminSidebar } from '@/components/Admin/AdminSidebar';
-import { useAdminStore } from '@/store/adminStore';
-import { getVolunteerApplications } from '@/lib/data';
 import { Badge } from '@/components/ui';
 import { toast } from 'sonner';
 import AdminGuard from '@/components/Admin/AdminGuard';
+import { AdminService } from '@/services/adminService';
+import { VolunteerResponse } from '@/types';
 
 export default function AdminVolunteersPage() {
-  const { volunteers, setVolunteers, updateVolunteerStatus } = useAdminStore();
+  const [volunteers, setVolunteers] = useState<VolunteerResponse[]>([]);
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
 
-  useEffect(() => { getVolunteerApplications().then(setVolunteers); }, []);
+  useEffect(() => { fetchVolunteers(); }, []);
+
+  const fetchVolunteers = async () => {
+    try {
+      const res = await AdminService.getVolunteers();
+      console.log(res.data.results);
+      setVolunteers(res.data.results);
+    } catch (error) {
+      toast.error("Failed to fetch volunteer applications. Please try again later.");
+    }
+  }
 
   const filtered = volunteers.filter(v =>
     (filterStatus === 'all' || v.status === filterStatus) &&
-    (v.name.toLowerCase().includes(search.toLowerCase()) || v.city.toLowerCase().includes(search.toLowerCase()))
+    (v.full_name.toLowerCase().includes(search.toLowerCase()) || v.city.toLowerCase().includes(search.toLowerCase()))
   );
 
-  const handleStatus = (id: string, status: 'approved' | 'declined') => {
-    updateVolunteerStatus(id, status);
-    toast.success(`Application ${status}`);
+  const handleStatus = async (id: string, status: 'accepted' | 'rejected') => {
+    try {
+      await AdminService.updateVolunteerStatus(id, status);
+      toast.success(`Application ${status}`);
+      fetchVolunteers(); // Refresh the list after updating status
+    } catch (error) {
+      toast.error("Failed to update volunteer status. Please try again later.");
+    }
   };
 
   return (
@@ -43,8 +58,8 @@ export default function AdminVolunteersPage() {
                   className="px-3 py-2 border rounded-lg text-sm outline-none" style={{ borderColor: 'var(--gray-200)' }}>
                   <option value="all">All Status</option>
                   <option value="pending">Pending</option>
-                  <option value="approved">Approved</option>
-                  <option value="declined">Declined</option>
+                  <option value="accepted">Accepted</option>
+                  <option value="rejected">Rejected</option>
                 </select>
               </div>
               <div className="overflow-x-auto">
@@ -56,21 +71,21 @@ export default function AdminVolunteersPage() {
                   </tr></thead>
                   <tbody>
                     {filtered.map(v => (
-                      <tr key={v.id} className="border-t hover:bg-gray-50 transition-colors" style={{ borderColor: 'var(--gray-100)' }}>
-                        <td className="px-5 py-3 font-medium whitespace-nowrap" style={{ color: 'var(--text)' }}>{v.name}</td>
+                      <tr key={v.reference_id} className="border-t hover:bg-gray-50 transition-colors" style={{ borderColor: 'var(--gray-100)' }}>
+                        <td className="px-5 py-3 font-medium whitespace-nowrap" style={{ color: 'var(--text)' }}>{v.full_name}</td>
                         <td className="px-5 py-3" style={{ color: 'var(--gray-600)' }}>{v.email}</td>
                         <td className="px-5 py-3 whitespace-nowrap" style={{ color: 'var(--gray-600)' }}>{v.city}</td>
                         <td className="px-5 py-3" style={{ color: 'var(--gray-600)', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.skills}</td>
                         <td className="px-5 py-3 whitespace-nowrap" style={{ color: 'var(--gray-600)' }}>{v.availability}</td>
-                        <td className="px-5 py-3"><Badge variant={v.status === 'approved' ? 'green' : v.status === 'declined' ? 'red' : 'yellow'}>{v.status}</Badge></td>
+                        <td className="px-5 py-3"><Badge variant={v.status === 'accepted' ? 'green' : v.status === 'rejected' ? 'red' : 'yellow'}>{v.status}</Badge></td>
                         <td className="px-5 py-3">
                           {v.status === 'pending' && (
                             <div className="flex gap-2">
-                              <button onClick={() => handleStatus(v.id, 'approved')}
-                                className="text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all hover:bg-green-50"
+                              <button onClick={() => handleStatus(v.reference_id, 'accepted')}
+                                className="text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all hover:bg-green-50 cursor-pointer"
                                 style={{ borderColor: '#86efac', color: '#16a34a' }}>Approve</button>
-                              <button onClick={() => handleStatus(v.id, 'declined')}
-                                className="text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all hover:bg-red-50"
+                              <button onClick={() => handleStatus(v.reference_id, 'rejected')}
+                                className="text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all hover:bg-red-50 cursor-pointer"
                                 style={{ borderColor: '#f87171', color: '#dc2626' }}>Decline</button>
                             </div>
                           )}

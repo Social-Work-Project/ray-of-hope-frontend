@@ -1,6 +1,24 @@
+"use client"
 import { VolunteerForm } from '@/components/Sections/VolunteerForm';
+import { WebsiteService } from '@/services/websiteService';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 export default function VolunteerPage() {
+  const [submitted, setSubmitted] = useState(false);
+
+  const onSave = async (data: any) => {
+    try {
+      await WebsiteService.submitVolunteerForm(data);
+      toast.success('Application submitted! We will contact you within 3–5 working days.');
+      setSubmitted(true);
+    } catch (error) {
+      console.error("Error submitting volunteer form:", error);
+      toast.error('Failed to submit application. Please try again.');
+      setSubmitted(false);
+    }
+  };
+
   return (
     <div className='pt-18.25'>
       <section className="py-20 text-center" style={{ background: "linear-gradient(135deg, var(--navy), #1B5CA8)", color: "white" }}>
@@ -18,7 +36,13 @@ export default function VolunteerPage() {
         <div className="bg-white rounded-2xl p-10 shadow-xl border -mt-10 mb-16" style={{ borderColor: "var(--gray-100)" }}>
           <h3 className="text-xl font-bold mb-1" style={{ color: "var(--navy)" }}>Volunteer Application</h3>
           <p className="text-sm mb-8" style={{ color: "var(--gray-400)" }}>We will get back to you within 3–5 working days.</p>
-          <VolunteerForm />
+         { !submitted && <VolunteerForm onSave={onSave} /> }
+         { submitted && (
+            <div className="text-center">
+              <p className="text-lg font-semibold" style={{ color: "var(--navy)" }}>Thank you for your application!</p>
+              <p className="text-base" style={{ color: "var(--gray-400)" }}>We will contact you within 3–5 working days.</p>
+            </div>
+          ) }
         </div>
       </div>
     </div>

@@ -43,11 +43,12 @@ apiClient.interceptors.response.use(
 )
 
 
-//Generic Methos
+//Generic Methods
 
 export const api = {
     get: <T = any>(url: string, config?: AxiosRequestConfig) => apiClient.get<T>(url, config),
     post: <T = any>(url: string, data?: any, config?: AxiosRequestConfig) => apiClient.post<T>(url, data, config),
     put: <T = any>(url: string, data?: any, config?: AxiosRequestConfig) => apiClient.put<T>(url, data, config),
     delete: <T = any>(url: string, config?: AxiosRequestConfig) => apiClient.delete<T>(url, config),
+    patch: <T = any>(url: string, data?: any, config?: AxiosRequestConfig) => apiClient.patch<T>(url, data, config),
 }

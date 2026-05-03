@@ -1,26 +1,37 @@
 'use client';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { submitVolunteerForm } from '@/lib/data';
 
 type FormData = {
-  name: string; email: string; phone: string; city: string;
-  skills: string; availability: string; interest: string; reason: string;
+  full_name: string; email: string; phone_number: string; city: string;
+  skills: string; availability: string; area_of_interest: string[]; purpose: string;
 };
 
 const inputCls = "w-full px-4 py-3 border rounded-xl text-sm outline-none transition-all focus:ring-2 focus:ring-blue-200";
 const labelCls = "block text-sm font-semibold mb-1.5";
 
-export function VolunteerForm() {
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormData>();
+const AREAS_OF_INTEREST = [
+  'Education & Tutoring',
+  'Health Camps',
+  'Sports Coaching',
+  'Social Awareness',
+  'Administrative Support',
+  'Fundraising',
+  'Any / Wherever Needed',
+];
+
+export function VolunteerForm({ onSave }: { onSave: (data: any) => Promise<void> }) {
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormData>({
+    defaultValues: { area_of_interest: [] },
+  });
 
   const onSubmit = async (data: FormData) => {
-    const result = await submitVolunteerForm({ ...data, eventId: undefined });
-    if (result.success) {
-      toast.success('Application submitted! We will contact you within 3–5 working days.');
+    try {
+      await onSave(data); // data.area_of_interest is string[]
       reset();
-    } else {
-      toast.error('Something went wrong. Please try again.');
+    } catch (error) {
+      console.error("Error in VolunteerForm onSubmit:", error);
+      toast.error('An unexpected error occurred. Please try again.');
     }
   };
 
@@ -29,8 +40,8 @@ export function VolunteerForm() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <div>
           <label className={labelCls} style={{ color: 'var(--gray-800)' }}>Full Name *</label>
-          <input {...register('name', { required: true })} placeholder="Your full name"
-            className={inputCls} style={{ borderColor: errors.name ? '#ef4444' : 'var(--gray-200)' }} />
+          <input {...register('full_name', { required: true })} placeholder="Your full name"
+            className={inputCls} style={{ borderColor: errors.full_name ? '#ef4444' : 'var(--gray-200)' }} />
         </div>
         <div>
           <label className={labelCls} style={{ color: 'var(--gray-800)' }}>Email Address *</label>
@@ -39,8 +50,8 @@ export function VolunteerForm() {
         </div>
         <div>
           <label className={labelCls} style={{ color: 'var(--gray-800)' }}>Phone Number *</label>
-          <input {...register('phone', { required: true })} type="tel" placeholder="+91 XXXXX XXXXX"
-            className={inputCls} style={{ borderColor: errors.phone ? '#ef4444' : 'var(--gray-200)' }} />
+          <input {...register('phone_number', { required: true })} type="tel" placeholder="+91 XXXXX XXXXX"
+            className={inputCls} style={{ borderColor: errors.phone_number ? '#ef4444' : 'var(--gray-200)' }} />
         </div>
         <div>
           <label className={labelCls} style={{ color: 'var(--gray-800)' }}>City / Location *</label>
@@ -63,27 +74,44 @@ export function VolunteerForm() {
             <option>Remote / Online</option>
           </select>
         </div>
-        <div>
-          <label className={labelCls} style={{ color: 'var(--gray-800)' }}>Area of Interest</label>
-          <select {...register('interest')} className={inputCls} style={{ borderColor: 'var(--gray-200)' }}>
-            <option value="">Select area</option>
-            <option>Education & Tutoring</option>
-            <option>Health Camps</option>
-            <option>Sports Coaching</option>
-            <option>Social Awareness</option>
-            <option>Administrative Support</option>
-            <option>Fundraising</option>
-            <option>Any / Wherever Needed</option>
-          </select>
+
+        {/* Multi-select Area of Interest as checkboxes */}
+        <div className="sm:col-span-2">
+          <label className={labelCls} style={{ color: 'var(--gray-800)' }}>
+            Area of Interest
+            {errors.area_of_interest && (
+              <span className="ml-2 text-xs font-normal text-red-500">Please select at least one</span>
+            )}
+          </label>
+          <div
+            className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 border rounded-xl"
+            style={{ borderColor: errors.area_of_interest ? '#ef4444' : 'var(--gray-200)' }}
+          >
+            {AREAS_OF_INTEREST.map((area) => (
+              <label
+                key={area}
+                className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg cursor-pointer hover:bg-blue-50 transition-colors text-sm"
+              >
+                <input
+                  type="checkbox"
+                  value={area}
+                  {...register('area_of_interest')}
+                  className="w-4 h-4 rounded accent-blue-500 cursor-pointer"
+                />
+                <span style={{ color: 'var(--gray-800)' }}>{area}</span>
+              </label>
+            ))}
+          </div>
         </div>
+
         <div className="sm:col-span-2">
           <label className={labelCls} style={{ color: 'var(--gray-800)' }}>Why Do You Want to Volunteer?</label>
-          <textarea {...register('reason')} rows={4} placeholder="Tell us about your motivation..."
+          <textarea {...register('purpose')} rows={4} placeholder="Tell us about your motivation..."
             className={inputCls} style={{ borderColor: 'var(--gray-200)', resize: 'vertical' }} />
         </div>
       </div>
       <button type="submit" disabled={isSubmitting}
-        className="w-full py-3.5 rounded-xl font-bold text-base transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-full py-3.5 rounded-xl font-bold text-base transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60 cursor-pointer disabled:cursor-not-allowed"
         style={{ background: 'var(--blue)', color: 'white' }}>
         {isSubmitting ? 'Submitting...' : 'Submit Application'}
       </button>

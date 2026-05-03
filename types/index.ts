@@ -105,3 +105,28 @@ export interface EventResponse {
   status: 'published' | 'draft';
   created_at: string;
 }
+
+export interface EventDetailResponse extends EventResponse {
+  schedule: { time: string; title: string }[];
+  volunteers: { name: string; email: string }[];
+  phone_number: string;
+  email: string;
+}
+
+type AreaOfInterest = {
+  reference_id: string;
+  name: string;
+};
+
+export type VolunteerResponse = {
+  reference_id: string;
+  full_name: string;
+  email: string;
+  phone_number: string;
+  city: string;
+  status: "pending" | "accepted" | "rejected"; // restrict if possible
+  availability: string;
+  created_at: string; // ISO datetime
+  skills: string;
+  areas_of_interest: AreaOfInterest[];
+};
