@@ -33,7 +33,7 @@ import { Lbl, Err, inp, Section } from "./common/UiHelpers";
 
 const teamSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters"),
-  role: z.string().min(2, "Role is required"),
+  designation: z.string().min(2, "Role is required"),
   bio: z.string().min(10, "Bio must be at least 10 characters"),
   joined_date: z
     .string()
@@ -229,7 +229,6 @@ export interface EventModalProps {
   isOpen: boolean;
   onClose: () => void;
   teams?: TeamResponse | null;
-  /** Receives FormData ready to POST as multipart/form-data */
   onSave: (formData: FormData) => void;
 }
 
@@ -256,11 +255,9 @@ export function TeamMembersModal({
     resolver: zodResolver(teamSchema),
     defaultValues: {
       name: "",
-      role: "",
+      designation: "",
       bio: "",
-
       joined_date: "",
-
       image: undefined,
       is_active: false,
     },
@@ -276,20 +273,17 @@ export function TeamMembersModal({
       const ev = teams as any;
       reset({
         name: ev.name ?? ev.title ?? "",
-        role: ev.role ?? "",
+        designation: ev.designation ?? "",
         bio: ev.bio ?? "",
-
         joined_date: toInputDate(ev.joined_date ?? ""),
-
         is_active: ev.is_active ?? false,
       });
     } else {
       reset({
         name: "",
-        role: "",
+        designation: "",
         bio: "",
         joined_date: "",
-
         is_active: false,
       });
     }
@@ -334,8 +328,8 @@ export function TeamMembersModal({
         >;
 
         if (dirty.name) fd.append("name", data.name);
-        if (dirty.role) fd.append("role", data.role);
-        if (dirty.bio) fd.append("bio", data.bio);
+        if (dirty.designation) fd.append("role", data.designation);
+        if (dirty.designation) fd.append("designation", data.designation);
 
         if (dirty.joined_date) fd.append("joined_date", data.joined_date);
 
@@ -348,8 +342,8 @@ export function TeamMembersModal({
       } else {
         // ── POST: send everything ──
         fd.append("name", data.name);
-        fd.append("role", data.role);
-        fd.append("bio", data.bio);
+        fd.append("role", data.designation);
+        fd.append("designation", data.bio);
 
         fd.append("joined_date", data.joined_date);
 
@@ -463,24 +457,24 @@ export function TeamMembersModal({
                   <Err msg={errors.name?.message} />
                 </div>
                 <div>
-                  <Lbl required>Role</Lbl>
+                  <Lbl required>Designation</Lbl>
                   <div className="relative">
                     <UserCog
                       className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
                       style={{ color: "var(--gray-400)" }}
                     />
                     <input
-                      {...register("role")}
+                      {...register("designation")}
                       placeholder="e.g. technology"
                       className={inp + " pl-10"}
                       style={{
-                        borderColor: errors.role
+                        borderColor: errors.designation
                           ? "#ef4444"
                           : "var(--gray-200)",
                       }}
                     />
                   </div>
-                  <Err msg={errors.role?.message} />
+                  <Err msg={errors.designation?.message} />
                 </div>
               </div>
 
@@ -525,7 +519,7 @@ export function TeamMembersModal({
             {/* ── MEDIA & STATUS ── */}
             <Section title="Photo & Status">
               <ImageUpload
-                existingImageUrl={isEdit ? (teams as any)?.logo : undefined}
+                existingImageUrl={isEdit ? (teams as any)?.image : undefined}
                 onFileChange={setImageFile}
               />
               <div>

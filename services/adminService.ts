@@ -22,6 +22,16 @@ export const AdminService = {
     updateVolunteerStatus: async (id: string, status: 'accepted' | 'rejected') => api.patch(`/volunteers/application/${id}/status/update/`, { status }),
     deleteVolunteer: async (id: string) => api.delete(`/volunteers/${id}/delete/`),
 
+    //Team Members
+    getAllTeams: async () => api.get("/events/team/list/"),
+    createTeam: async (data: FormData) => api.post("/events/team/create/", data, 
+        {headers: {"Content-Type": "multipart/form-data"}}
+    ),
+    updateTeam: async (id: string, data: FormData) => api.patch (`/events/team/${id}/update/`, data, 
+        {headers: {"Content-Type": "multipart/form-data"}}
+    ),
+    deleteTeam: async (id: string) => api.delete(`/events/team/${id}/delete`),
+
 
     //Gallery
     getGalleryCategories: async () => api.get("/events/gallery-category/list/"),
