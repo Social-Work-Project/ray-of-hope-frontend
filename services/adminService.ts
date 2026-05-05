@@ -30,7 +30,15 @@ export const AdminService = {
         headers: { "Content-Type": "multipart/form-data" },
     }),
     updateGallery: async (id: string, data: { category_name: string }) => api.put(`/gallery/categories/${id}/update/`, data),
-    deleteGallery: async (id: string) => api.delete(`/events/gallery-category/${id}/delete/`),
+    deleteGalleryCategory: async (id: string) => api.delete(`/events/gallery-category/${id}/delete/`),
+    deleteSinglePhoto: async (id: string) => api.delete(`/events/gallery/${id}/delete/`),
+
+
+    //Testimonials
+    getAllTestimonials: async () => api.get("/events/testimonial/list/"),
+    createTestimonial: async (data: any) => api.post("/events/testimonial/create/", data),
+    patchTestimonial: async (id: string, data: any) => api.patch(`/events/testimonial/${id}/update/`, data),
+    deleteTestimonial: async (id: string) => api.delete(`/events/testimonial/${id}/delete/`),
 
 
     //Users

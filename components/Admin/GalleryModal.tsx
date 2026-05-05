@@ -10,6 +10,7 @@ import {
   CheckCircle2, AlertCircle, Loader2, Grid3x3,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { GalleryImage } from '@/types';
 
 // ── TYPES ──────────────────────────────────────────────────────────────────
 export interface GalleryCategory {
@@ -136,14 +137,20 @@ function ImageCard({
   );
 }
 
+export interface GalleryModalItem {
+  category?: { reference_id: string; name: string };  // pre-selected album
+  title?: string;
+  is_active?: boolean;
+  images?: string[];
+  reference_id?: string;
+}
+
 // ── MAIN MODAL ─────────────────────────────────────────────────────────────
 export interface GalleryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  item?: GalleryItemResponse | null;
-  /** Called with final FormData — POST for create, PATCH for edit */
+  item?: GalleryModalItem | null;   // ← was GalleryImage[] | null
   onSave: (formData: FormData, isEdit: boolean) => Promise<void>;
-  /** Async function that fetches categories from /api/events/gallery-category/list/ */
   fetchCategories: () => Promise<GalleryCategory[]>;
 }
 
@@ -156,7 +163,7 @@ interface ImageEntry {
 }
 
 export function GalleryModal({ isOpen, onClose, item, onSave, fetchCategories }: GalleryModalProps) {
-  const isEdit = Boolean(item);
+  const isEdit = Boolean(item?.reference_id);
   const overlayRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -198,36 +205,36 @@ export function GalleryModal({ isOpen, onClose, item, onSave, fetchCategories }:
 
 
   // ── Populate form in edit mode ───────────────────────────────────────────
-  useEffect(() => {
-    if (!isOpen) return;
-    if (item) {
-      reset({
-        category_mode: 'existing',
-        existing_category_id: String(item.category),
-        new_category_name: '',
-        title: item.title ?? '',
-        is_active: item.is_active ?? false,
-      });
-      // Hydrate existing images
-      const existing: ImageEntry[] = (item.images ?? []).map((url, i) => ({
-        id: `existing-${i}`,
-        preview: url,
-        name: url.split('/').pop() ?? `image-${i + 1}`,
-        isExisting: true,
-      }));
-      setImages(existing);
-    } else {
-      reset({
-        category_mode: 'existing',
-        existing_category_id: '',
-        new_category_name: '',
-        title: '',
-        is_active: false,
-      });
-      setImages([]);
-    }
-    setImageError('');
-  }, [isOpen, item, reset]);
+ useEffect(() => {
+  if (!isOpen) return;
+  console.log("items;", item)
+  if (item) {
+    reset({
+      category_mode: 'existing',
+      existing_category_id: item.category ? String(item.category.reference_id) : '',
+      new_category_name: '',
+      title: item.title ?? '',
+      is_active: item.is_active ?? false,
+    });
+    const existing: ImageEntry[] = (item.images ?? []).map((url, i) => ({
+      id: `existing-${i}`,
+      preview: url,
+      name: url.split('/').pop() ?? `image-${i + 1}`,
+      isExisting: true,
+    }));
+    setImages(existing);
+  } else {
+    reset({
+      category_mode: 'existing',
+      existing_category_id: '',
+      new_category_name: '',
+      title: '',
+      is_active: false,
+    });
+    setImages([]);
+  }
+  setImageError('');
+}, [isOpen, item, reset]);
 
   // ── Scroll lock ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -295,15 +302,20 @@ export function GalleryModal({ isOpen, onClose, item, onSave, fetchCategories }:
       const fd = new FormData();
 
       if (isEdit) {
+    
         // Only send dirty fields
         if (dirtyFields.title) fd.append('title', data.title);
         if (dirtyFields.is_active) fd.append('is_active', String(data.is_active));
 
-        if (data.category_mode === 'new' && dirtyFields.new_category_name) {
-          fd.append('category_name', data.new_category_name!.trim());
-        } else if (data.category_mode === 'existing' && dirtyFields.existing_category_id) {
-          fd.append('category', data.existing_category_id!);
-        }
+         if (data.category_mode === 'new' && data.new_category_name) {
+    fd.append('category_name', data.new_category_name.trim());
+  } else if (data.category_mode === 'existing' && data.existing_category_id) {
+    const selectedCat = categories.find(
+      cat => String(cat.id) === data.existing_category_id
+    );
+   
+    if (selectedCat) fd.append('category_name', selectedCat.category_name.toString());
+  }
 
         // Only new files (existing images stay on server)
         newImages.forEach(img => {
@@ -323,7 +335,11 @@ export function GalleryModal({ isOpen, onClose, item, onSave, fetchCategories }:
         if (data.category_mode === 'new') {
           fd.append('category_name', data.new_category_name!.trim());
         } else {
-          fd.append('category', data.existing_category_id!);
+          const selectedCat = categories.find(
+      cat => String(cat.id) === data.existing_category_id
+    );
+   
+    if (selectedCat) fd.append('category_name', selectedCat.category_name.toString());
         }
 
         images.forEach(img => {
@@ -347,38 +363,44 @@ export function GalleryModal({ isOpen, onClose, item, onSave, fetchCategories }:
   return (
     <div
       ref={overlayRef}
-      onClick={e => {
+      onClick={(e) => {
         if (e.target !== overlayRef.current) return;
-        if (isDirty && !confirm('Unsaved changes. Close anyway?')) return;
+        if (isDirty && !confirm("Unsaved changes. Close anyway?")) return;
         onClose();
       }}
       className="fixed inset-0 z-9999 flex items-center justify-center p-4 overflow-y-auto"
-      style={{ background: 'rgba(11,31,58,0.65)', backdropFilter: 'blur(8px)' }}
+      style={{ background: "rgba(11,31,58,0.65)", backdropFilter: "blur(8px)" }}
     >
       <div
         className="relative w-full max-w-2xl rounded-2xl shadow-2xl bg-white my-auto"
-        onClick={e => e.stopPropagation()}
-        style={{ maxHeight: '92vh', display: 'flex', flexDirection: 'column' }}
+        onClick={(e) => e.stopPropagation()}
+        style={{ maxHeight: "92vh", display: "flex", flexDirection: "column" }}
       >
         {/* ── HEADER ── */}
         <div
           className="flex items-center justify-between px-7 py-5 border-b shrink-0"
-          style={{ borderColor: 'var(--gray-100)' }}
+          style={{ borderColor: "var(--gray-100)" }}
         >
           <div className="flex items-center gap-3">
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ background: isEdit ? '#FFF3DC' : '#EEF4FF' }}
+              style={{ background: isEdit ? "#FFF3DC" : "#EEF4FF" }}
             >
-              <Grid3x3 className="w-5 h-5" style={{ color: isEdit ? '#b87a10' : 'var(--blue)' }} />
+              <Grid3x3
+                className="w-5 h-5"
+                style={{ color: isEdit ? "#b87a10" : "var(--blue)" }}
+              />
             </div>
             <div>
-              <h2 className="text-lg font-black" style={{ color: 'var(--navy)' }}>
-                {isEdit ? 'Edit Gallery Item' : 'Upload Gallery Images'}
+              <h2
+                className="text-lg font-black"
+                style={{ color: "var(--navy)" }}
+              >
+                {isEdit ? "Edit Gallery Item" : "Upload Gallery Images"}
               </h2>
-              <p className="text-xs" style={{ color: 'var(--gray-400)' }}>
+              <p className="text-xs" style={{ color: "var(--gray-400)" }}>
                 {isEdit
-                  ? `Editing: ${item?.title}`
+                  ? `Editing: ${item?.title ?? "Gallery Item"}`
                   : `Up to ${MAX_IMAGES} images · PNG, JPG, WEBP · 10 MB each`}
               </p>
             </div>
@@ -388,7 +410,7 @@ export function GalleryModal({ isOpen, onClose, item, onSave, fetchCategories }:
             onClick={onClose}
             className="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-gray-100"
           >
-            <X className="w-5 h-5" style={{ color: 'var(--gray-600)' }} />
+            <X className="w-5 h-5" style={{ color: "var(--gray-600)" }} />
           </button>
         </div>
 
@@ -396,61 +418,95 @@ export function GalleryModal({ isOpen, onClose, item, onSave, fetchCategories }:
         <form
           onSubmit={handleSubmit(onSubmit)}
           noValidate
-          style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            flex: 1,
+            minHeight: 0,
+          }}
         >
           <div className="px-7 py-6 space-y-7 overflow-y-auto flex-1">
-
             {/* ── CATEGORY ── */}
-            <Section title="Category" icon={<FolderOpen className="w-3.5 h-3.5" />}>
+            <Section
+              title="Category"
+              icon={<FolderOpen className="w-3.5 h-3.5" />}
+            >
               {/* Mode toggle */}
-              <div className="flex gap-2 p-1 rounded-xl" style={{ background: 'var(--gray-50)', border: '1px solid var(--gray-100)' }}>
-                {(['existing', 'new'] as const).map(mode => (
+              <div
+                className="flex gap-2 p-1 rounded-xl"
+                style={{
+                  background: "var(--gray-50)",
+                  border: "1px solid var(--gray-100)",
+                }}
+              >
+                {(["existing", "new"] as const).map((mode) => (
                   <button
                     key={mode}
                     type="button"
-                    onClick={() => setValue('category_mode', mode, { shouldDirty: true })}
+                    onClick={() =>
+                      setValue("category_mode", mode, { shouldDirty: true })
+                    }
                     className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold transition-all"
                     style={
                       categoryMode === mode
-                        ? { background: 'var(--blue)', color: 'white', boxShadow: '0 2px 8px rgba(59,130,246,0.25)' }
-                        : { color: 'var(--gray-500)' }
+                        ? {
+                            background: "var(--blue)",
+                            color: "white",
+                            boxShadow: "0 2px 8px rgba(59,130,246,0.25)",
+                          }
+                        : { color: "var(--gray-500)" }
                     }
                   >
-                    {mode === 'existing'
-                      ? <><FolderOpen className="w-3.5 h-3.5" /> Use Existing Category</>
-                      : <><Plus className="w-3.5 h-3.5" /> Create New Category</>}
+                    {mode === "existing" ? (
+                      <>
+                        <FolderOpen className="w-3.5 h-3.5" /> Use Existing
+                        Category
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="w-3.5 h-3.5" /> Create New Category
+                      </>
+                    )}
                   </button>
                 ))}
               </div>
 
-              {categoryMode === 'existing' ? (
+              {categoryMode === "existing" ? (
                 <div>
                   <Lbl required>Select Category</Lbl>
                   <div className="relative">
                     {catLoading ? (
                       <div
                         className="w-full px-4 py-2.5 border rounded-xl text-sm flex items-center gap-2"
-                        style={{ borderColor: 'var(--gray-200)', color: 'var(--gray-400)' }}
+                        style={{
+                          borderColor: "var(--gray-200)",
+                          color: "var(--gray-400)",
+                        }}
                       >
-                        <Loader2 className="w-4 h-4 animate-spin" /> Loading categories...
+                        <Loader2 className="w-4 h-4 animate-spin" /> Loading
+                        categories...
                       </div>
                     ) : (
                       <>
                         <FolderOpen
                           className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
-                          style={{ color: 'var(--gray-400)' }}
+                          style={{ color: "var(--gray-400)" }}
                         />
                         <ChevronDown
                           className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
-                          style={{ color: 'var(--gray-400)' }}
+                          style={{ color: "var(--gray-400)" }}
                         />
                         <select
-                          {...register('existing_category_id')}
-                          className={inp + ' pl-10 pr-10 appearance-none'}
-                          style={{ borderColor: errors.existing_category_id ? '#ef4444' : 'var(--gray-200)' }}
+                          {...register("existing_category_id")}
+                          className={inp + " pl-10 pr-10 appearance-none"}
+                          style={{
+                            borderColor: errors.existing_category_id
+                              ? "#ef4444"
+                              : "var(--gray-200)",
+                          }}
                         >
                           <option value="">— Select a category —</option>
-                          {categories.map(cat => (
+                          {categories.map((cat) => (
                             <option key={cat.id} value={String(cat.id)}>
                               {cat.category_name}
                             </option>
@@ -461,7 +517,10 @@ export function GalleryModal({ isOpen, onClose, item, onSave, fetchCategories }:
                   </div>
                   <Err msg={errors.existing_category_id?.message} />
                   {!catLoading && categories.length === 0 && (
-                    <p className="text-xs mt-1.5" style={{ color: 'var(--gray-400)' }}>
+                    <p
+                      className="text-xs mt-1.5"
+                      style={{ color: "var(--gray-400)" }}
+                    >
                       No categories found. Switch to "Create New" to add one.
                     </p>
                   )}
@@ -470,12 +529,19 @@ export function GalleryModal({ isOpen, onClose, item, onSave, fetchCategories }:
                 <div>
                   <Lbl required>New Category Name</Lbl>
                   <div className="relative">
-                    <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'var(--gray-400)' }} />
+                    <Tag
+                      className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
+                      style={{ color: "var(--gray-400)" }}
+                    />
                     <input
-                      {...register('new_category_name')}
+                      {...register("new_category_name")}
                       placeholder="e.g. Annual Meetup 2025"
-                      className={inp + ' pl-10'}
-                      style={{ borderColor: errors.new_category_name ? '#ef4444' : 'var(--gray-200)' }}
+                      className={inp + " pl-10"}
+                      style={{
+                        borderColor: errors.new_category_name
+                          ? "#ef4444"
+                          : "var(--gray-200)",
+                      }}
                     />
                   </div>
                   <Err msg={errors.new_category_name?.message} />
@@ -489,12 +555,17 @@ export function GalleryModal({ isOpen, onClose, item, onSave, fetchCategories }:
               <div>
                 <Lbl required>Gallery Title</Lbl>
                 <div className="relative">
-                  <Type className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'var(--gray-400)' }} />
+                  <Type
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
+                    style={{ color: "var(--gray-400)" }}
+                  />
                   <input
-                    {...register('title')}
+                    {...register("title")}
                     placeholder="e.g. Tree Plantation Drive Photos"
-                    className={inp + ' pl-10'}
-                    style={{ borderColor: errors.title ? '#ef4444' : 'var(--gray-200)' }}
+                    className={inp + " pl-10"}
+                    style={{
+                      borderColor: errors.title ? "#ef4444" : "var(--gray-200)",
+                    }}
                   />
                 </div>
                 <Err msg={errors.title?.message} />
@@ -505,91 +576,163 @@ export function GalleryModal({ isOpen, onClose, item, onSave, fetchCategories }:
                 <Lbl required>Visibility</Lbl>
                 <div className="flex gap-3">
                   {[
-                    { value: true, label: 'Published', icon: <Eye className="w-4 h-4" />, activeStyle: { background: '#dcfce7', borderColor: '#86efac', color: '#16a34a' } },
-                    { value: false, label: 'Draft', icon: <EyeOff className="w-4 h-4" />, activeStyle: { background: '#fef9c3', borderColor: '#fbbf24', color: '#a16207' } },
-                  ].map(opt => (
+                    {
+                      value: true,
+                      label: "Published",
+                      icon: <Eye className="w-4 h-4" />,
+                      activeStyle: {
+                        background: "#dcfce7",
+                        borderColor: "#86efac",
+                        color: "#16a34a",
+                      },
+                    },
+                    {
+                      value: false,
+                      label: "Draft",
+                      icon: <EyeOff className="w-4 h-4" />,
+                      activeStyle: {
+                        background: "#fef9c3",
+                        borderColor: "#fbbf24",
+                        color: "#a16207",
+                      },
+                    },
+                  ].map((opt) => (
                     <button
                       key={String(opt.value)}
                       type="button"
-                      onClick={() => setValue('is_active', opt.value, { shouldDirty: true })}
+                      onClick={() =>
+                        setValue("is_active", opt.value, { shouldDirty: true })
+                      }
                       className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-sm font-semibold transition-all"
                       style={
                         watchedStatus === opt.value
                           ? opt.activeStyle
-                          : { background: 'white', borderColor: 'var(--gray-200)', color: 'var(--gray-400)' }
+                          : {
+                              background: "white",
+                              borderColor: "var(--gray-200)",
+                              color: "var(--gray-400)",
+                            }
                       }
                     >
-                      {opt.icon}{opt.label}
+                      {opt.icon}
+                      {opt.label}
                     </button>
                   ))}
                 </div>
-                <p className="text-xs mt-2" style={{ color: 'var(--gray-400)' }}>
+                <p
+                  className="text-xs mt-2"
+                  style={{ color: "var(--gray-400)" }}
+                >
                   {watchedStatus
-                    ? '✓ Gallery will be visible on the public website.'
-                    : 'Gallery will be hidden from the public website.'}
+                    ? "✓ Gallery will be visible on the public website."
+                    : "Gallery will be hidden from the public website."}
                 </p>
               </div>
             </Section>
 
             {/* ── IMAGES ── */}
-            <Section title="Images" icon={<ImageIcon className="w-3.5 h-3.5" />}>
+            <Section
+              title="Images"
+              icon={<ImageIcon className="w-3.5 h-3.5" />}
+            >
               {/* Stats bar */}
               <div
                 className="flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-semibold"
                 style={{
-                  background: images.length >= MAX_IMAGES ? '#fef3c7' : 'var(--gray-50)',
-                  border: '1px solid ' + (images.length >= MAX_IMAGES ? '#fbbf24' : 'var(--gray-100)'),
-                  color: images.length >= MAX_IMAGES ? '#92400e' : 'var(--gray-600)',
+                  background:
+                    images.length >= MAX_IMAGES ? "#fef3c7" : "var(--gray-50)",
+                  border:
+                    "1px solid " +
+                    (images.length >= MAX_IMAGES
+                      ? "#fbbf24"
+                      : "var(--gray-100)"),
+                  color:
+                    images.length >= MAX_IMAGES ? "#92400e" : "var(--gray-600)",
                 }}
               >
                 <span className="flex items-center gap-2">
                   <ImageIcon className="w-3.5 h-3.5" />
                   {images.length} / {MAX_IMAGES} images
                   {isEdit && newImageCount > 0 && (
-                    <span className="px-2 py-0.5 rounded-full text-white font-bold" style={{ background: 'var(--blue)', fontSize: 10 }}>
+                    <span
+                      className="px-2 py-0.5 rounded-full text-white font-bold"
+                      style={{ background: "var(--blue)", fontSize: 10 }}
+                    >
                       +{newImageCount} new
                     </span>
                   )}
                 </span>
-                {images.length >= MAX_IMAGES
-                  ? <span>Maximum reached</span>
-                  : <span>{MAX_IMAGES - images.length} remaining</span>}
+                {images.length >= MAX_IMAGES ? (
+                  <span>Maximum reached</span>
+                ) : (
+                  <span>{MAX_IMAGES - images.length} remaining</span>
+                )}
               </div>
 
               {/* Drop zone */}
               {canAddMore && (
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsDragging(true);
+                  }}
                   onDragLeave={() => setIsDragging(false)}
                   onDrop={handleDrop}
                   className="cursor-pointer rounded-xl border-2 border-dashed transition-all"
                   style={{
-                    borderColor: isDragging ? 'var(--blue)' : imageError ? '#ef4444' : 'var(--gray-200)',
-                    background: isDragging ? 'rgba(59,130,246,0.04)' : 'var(--gray-50)',
-                    padding: '28px 20px',
+                    borderColor: isDragging
+                      ? "var(--blue)"
+                      : imageError
+                        ? "#ef4444"
+                        : "var(--gray-200)",
+                    background: isDragging
+                      ? "rgba(59,130,246,0.04)"
+                      : "var(--gray-50)",
+                    padding: "28px 20px",
                   }}
                 >
                   <div className="flex flex-col items-center gap-3">
                     <div
                       className="w-12 h-12 rounded-2xl flex items-center justify-center"
-                      style={{ background: isDragging ? 'rgba(59,130,246,0.1)' : 'var(--gray-100)' }}
+                      style={{
+                        background: isDragging
+                          ? "rgba(59,130,246,0.1)"
+                          : "var(--gray-100)",
+                      }}
                     >
-                      <Upload className="w-5 h-5" style={{ color: isDragging ? 'var(--blue)' : 'var(--gray-400)' }} />
+                      <Upload
+                        className="w-5 h-5"
+                        style={{
+                          color: isDragging ? "var(--blue)" : "var(--gray-400)",
+                        }}
+                      />
                     </div>
                     <div className="text-center">
-                      <p className="text-sm font-semibold" style={{ color: 'var(--gray-700)' }}>
-                        {isDragging ? 'Drop images here' : 'Click to upload or drag & drop'}
+                      <p
+                        className="text-sm font-semibold"
+                        style={{ color: "var(--gray-700)" }}
+                      >
+                        {isDragging
+                          ? "Drop images here"
+                          : "Click to upload or drag & drop"}
                       </p>
-                      <p className="text-xs mt-1" style={{ color: 'var(--gray-400)' }}>
-                        PNG, JPG, WEBP · Max 10 MB each · Up to {MAX_IMAGES - images.length} more
+                      <p
+                        className="text-xs mt-1"
+                        style={{ color: "var(--gray-400)" }}
+                      >
+                        PNG, JPG, WEBP · Max 10 MB each · Up to{" "}
+                        {MAX_IMAGES - images.length} more
                       </p>
                     </div>
                     <button
                       type="button"
                       className="px-5 py-2 rounded-xl text-xs font-bold transition-all hover:-translate-y-0.5 hover:shadow-md"
-                      style={{ background: 'var(--blue)', color: 'white' }}
-                      onClick={e => { e.stopPropagation(); fileInputRef.current?.click(); }}
+                      style={{ background: "var(--blue)", color: "white" }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        fileInputRef.current?.click();
+                      }}
                     >
                       <Plus className="w-3.5 h-3.5 inline mr-1" />
                       Browse Files
@@ -618,16 +761,28 @@ export function GalleryModal({ isOpen, onClose, item, onSave, fetchCategories }:
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
                         className="aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-1.5 transition-all hover:border-blue-400 hover:bg-blue-50"
-                        style={{ borderColor: 'var(--gray-200)' }}
+                        style={{ borderColor: "var(--gray-200)" }}
                       >
-                        <Plus className="w-5 h-5" style={{ color: 'var(--gray-400)' }} />
-                        <span className="text-xs font-semibold" style={{ color: 'var(--gray-400)' }}>Add more</span>
+                        <Plus
+                          className="w-5 h-5"
+                          style={{ color: "var(--gray-400)" }}
+                        />
+                        <span
+                          className="text-xs font-semibold"
+                          style={{ color: "var(--gray-400)" }}
+                        >
+                          Add more
+                        </span>
                       </button>
                     )}
                   </div>
                   {isEdit && (
-                    <p className="text-xs mt-2" style={{ color: 'var(--gray-400)' }}>
-                      💡 Removing an existing image will delete it from the server on save.
+                    <p
+                      className="text-xs mt-2"
+                      style={{ color: "var(--gray-400)" }}
+                    >
+                      💡 Removing an existing image will delete it from the
+                      server on save.
                     </p>
                   )}
                 </div>
@@ -639,7 +794,10 @@ export function GalleryModal({ isOpen, onClose, item, onSave, fetchCategories }:
                 accept="image/*"
                 multiple
                 className="hidden"
-                onChange={e => { if (e.target.files) addFiles(e.target.files); e.target.value = ''; }}
+                onChange={(e) => {
+                  if (e.target.files) addFiles(e.target.files);
+                  e.target.value = "";
+                }}
               />
             </Section>
           </div>
@@ -647,19 +805,26 @@ export function GalleryModal({ isOpen, onClose, item, onSave, fetchCategories }:
           {/* ── FOOTER ── */}
           <div
             className="px-7 py-4 border-t flex items-center justify-between gap-3 shrink-0"
-            style={{ borderColor: 'var(--gray-100)', background: 'var(--gray-50)', borderRadius: '0 0 1rem 1rem' }}
+            style={{
+              borderColor: "var(--gray-100)",
+              background: "var(--gray-50)",
+              borderRadius: "0 0 1rem 1rem",
+            }}
           >
-            <p className="text-xs" style={{ color: 'var(--gray-400)' }}>
+            <p className="text-xs" style={{ color: "var(--gray-400)" }}>
               {isEdit
-                ? 'Only changed fields will be sent to the server.'
-                : `${images.length} image${images.length !== 1 ? 's' : ''} ready to upload.`}
+                ? "Only changed fields will be sent to the server."
+                : `${images.length} image${images.length !== 1 ? "s" : ""} ready to upload.`}
             </p>
             <div className="flex gap-2.5">
               <button
                 type="button"
                 onClick={onClose}
                 className="px-5 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all hover:bg-gray-100"
-                style={{ borderColor: 'var(--gray-200)', color: 'var(--gray-600)' }}
+                style={{
+                  borderColor: "var(--gray-200)",
+                  color: "var(--gray-600)",
+                }}
               >
                 Cancel
               </button>
@@ -667,12 +832,21 @@ export function GalleryModal({ isOpen, onClose, item, onSave, fetchCategories }:
                 type="submit"
                 disabled={saving}
                 className="px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0"
-                style={{ background: isEdit ? 'var(--accent)' : 'var(--blue)', color: isEdit ? 'var(--navy)' : 'white' }}
+                style={{
+                  background: isEdit ? "var(--accent)" : "var(--blue)",
+                  color: isEdit ? "var(--navy)" : "white",
+                }}
               >
                 {saving ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" />{isEdit ? 'Saving...' : 'Uploading...'}</>
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    {isEdit ? "Saving..." : "Uploading..."}
+                  </>
                 ) : (
-                  <><CheckCircle2 className="w-4 h-4" />{isEdit ? 'Save Changes' : 'Upload Gallery'}</>
+                  <>
+                    <CheckCircle2 className="w-4 h-4" />
+                    {isEdit ? "Save Changes" : "Upload Gallery"}
+                  </>
                 )}
               </button>
             </div>

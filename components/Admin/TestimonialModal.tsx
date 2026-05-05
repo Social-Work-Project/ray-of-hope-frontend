@@ -1,18 +1,17 @@
 "use client";
-import { TestimonialResponse } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { BadgeCheck, CalendarDays, FileText, Map, MapPin, MessageCirclePlus, Pointer, Tag, User, UserCog, X } from "lucide-react";
+import {  FileText, MessageCirclePlus, User, UserCog, X } from "lucide-react";
 import { Lbl, Err, inp } from "./common/UiHelpers";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
+import { TestimonialsResponse } from "@/types";
 
 export interface TestimonialModalProps {
   isOpen: boolean;
   onClose: () => void;
-  testimonial?: TestimonialResponse | null;
-  /** Receives FormData ready to POST as multipart/form-data */
-  onSave: (formData: FormData) => void;
+  testimonial?: TestimonialsResponse | null;
+  onSave: (data: any) => void;
 }
 
 
@@ -20,7 +19,6 @@ const testimonalSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters"),
   message: z.string().min(10, "Message must be at least 10 characters"),
   role: z.string().min(2, "Role is required"),
-  location: z.string().optional(),
   is_active: z.boolean().default(false).optional(),
 });
 
@@ -34,6 +32,7 @@ const TestimonialModal: React.FC<TestimonialModalProps> = ({
 }) => {
   const overlayRef = useRef<HTMLDivElement>(null);
   const isEdit = Boolean(testimonial);
+  const [saving, setSaving] = useState(false)
 
 const {
   register,
@@ -49,10 +48,26 @@ const {
     name: '',
     message: '',
     role: '',
-    location: '',
     is_active: false,
   },
 });
+
+useEffect(() => {
+  if (!isOpen) return;
+  if (!testimonial) {
+    reset({ name: '', role: '', message: '', is_active: false });
+    return;
+  }
+
+  // Small defer to ensure testimonial is populated
+  const t = testimonial as any;
+  reset({
+    name: t.name ?? '',
+    role: t.role ?? '',
+    message: t.message ?? '',
+    is_active: t.is_active ?? t.active ?? false, // handle both key names
+  });
+}, [isOpen, testimonial, reset]);
 
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target !== overlayRef.current) return;
@@ -60,8 +75,31 @@ const {
     onClose();
   };
 
+    useEffect(() => {
+      if (!isOpen) return;
+      const handler = (e: KeyboardEvent) => {
+        if (e.key !== 'Escape') return;
+        if (isDirty && !confirm('You have unsaved changes. Close anyway?')) return;
+        onClose();
+      };
+      window.addEventListener('keydown', handler);
+      return () => window.removeEventListener('keydown', handler);
+    }, [isOpen, isDirty, onClose]);
+  
+    useEffect(() => {
+      document.body.style.overflow = isOpen ? 'hidden' : '';
+      return () => { document.body.style.overflow = ''; };
+    }, [isOpen]);
+
   const onSubmit = (data: TestimonialFormData) => {
-   console.log("Form submitted with data:", data);
+   try {
+    setSaving(true)
+    onSave(data)
+   } catch(err) {
+    console.log(err)
+   } finally {
+    setSaving(false)
+   }
   };
   return (
     <div
@@ -162,24 +200,7 @@ const {
                 <Err msg={errors.role?.message} />
               </div>
 
-              <div>
-                <Lbl>Location</Lbl>
-                <div className="relative">
-                    <MapPin
-                        className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
-                        style={{ color: "var(--gray-400)" }}
-                    />
-                    <input
-                        {...register("location")} 
-                        placeholder="e.g. Siliguri"
-                        className={inp + " pl-10"}
-                        style={{
-                            borderColor: errors.location ? "#ef4444" : "var(--gray-200)",
-                        }}
-                    />
-                </div>
-                <Err msg={errors.location?.message} />
-              </div>
+     
 
               <div>
                 <Lbl required>Message</Lbl>
@@ -219,6 +240,7 @@ const {
                 Cancel
             </button>
             <button
+            disabled={saving}
               type="submit"
               className="w-full px-4 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 hover:shadow-lg cursor-pointer"
               style={{ background: "var(--blue)", color: "white" }}

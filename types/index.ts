@@ -131,15 +131,6 @@ export type VolunteerResponse = {
   areas_of_interest: AreaOfInterest[];
 };
 
-export interface TestimonialResponse {
-  reference_id: string;
-  name: string;
-  role: string;
-  message: string;
-  location: string;
-  is_active: boolean;
-}
-
 
 export interface TeamResponse {
   reference_id: string;
@@ -165,6 +156,32 @@ export interface User {
   date_joined: string;
 }
 
-export interface GalleryResponse {
-  
+export interface GalleryCategory {
+  reference_id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GalleryImage {
+  reference_id: string;
+  title: string;
+  image: string;
+  category: GalleryCategory;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Album {
+  category: GalleryCategory;
+  images: GalleryImage[];
+}
+
+export interface TestimonialsResponse {
+  reference_id: string;
+  name: string;
+  role: string;
+  message: string;
+  is_active: string;
 }

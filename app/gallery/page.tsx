@@ -41,7 +41,7 @@ function Lightbox({ images, index, onClose, onChange }: {
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center"
+      className="fixed inset-0 z-9999 flex items-center justify-center"
       style={{ background: 'rgba(0,0,0,0.93)', backdropFilter: 'blur(10px)' }}
       onClick={onClose}
     >

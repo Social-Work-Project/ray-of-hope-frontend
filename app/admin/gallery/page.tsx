@@ -9,29 +9,10 @@ import {
   Pencil, Trash2, ImageIcon, FolderOpen,
   Loader2, Plus, Eye, EyeOff, X, ChevronLeft, ChevronRight, Upload,
 } from 'lucide-react';
+import { Album, GalleryCategory, GalleryImage } from '@/types';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-export interface GalleryCategory {
-  reference_id: string;
-  name: string;
-  created_at: string;
-  updated_at: string;
-}
 
-export interface GalleryImage {
-  reference_id: string;
-  title: string;
-  image: string;
-  category: GalleryCategory;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-interface Album {
-  category: GalleryCategory;
-  images: GalleryImage[];
-}
 
 // ── Lightbox ──────────────────────────────────────────────────────────────────
 function Lightbox({ images, index, onClose, onChange }: {
@@ -86,20 +67,15 @@ function Lightbox({ images, index, onClose, onChange }: {
 }
 
 // ── Album Detail Modal ────────────────────────────────────────────────────────
-function AlbumDetailModal({ album, onClose, onDeleteCategory, onDeleteImage, onAddImages, deletingId, addingImages }: {
-  album: Album;
+function AlbumDetailModal({ album, onClose, onDeleteCategory, onDeleteImage, onOpenUploadModal, deletingId }: {
+    album: Album;
   onClose: () => void;
   onDeleteCategory: (album: Album) => void;
   onDeleteImage: (img: GalleryImage) => void;
-  onAddImages: (album: Album, files: FileList) => void;
+  onOpenUploadModal: (album: Album) => void; // ← new
   deletingId: string | null;
-  addingImages: boolean;
 }) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const fileInputRef = useState<HTMLInputElement | null>(null);
-  const inputRef = useCallback((el: HTMLInputElement | null) => {
-    (fileInputRef as any)[0] = el;
-  }, []);
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => { if (e.key === 'Escape' && lightboxIndex === null) onClose(); };
@@ -145,14 +121,13 @@ function AlbumDetailModal({ album, onClose, onDeleteCategory, onDeleteImage, onA
             <div className="flex items-center gap-2">
               {/* Add images button */}
               <button
-                onClick={() => (fileInputRef as any)[0]?.click()}
-                disabled={addingImages}
+                onClick={() => onOpenUploadModal(album)}
+               
                 className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all hover:-translate-y-0.5 hover:shadow-md disabled:opacity-60"
                 style={{ background: 'var(--blue)', color: 'white' }}
               >
-                {addingImages
-                  ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  : <Upload className="w-3.5 h-3.5" />}
+          
+                   <Upload className="w-3.5 h-3.5" />
                 Add Photos
               </button>
               {/* Delete category */}
@@ -180,7 +155,7 @@ function AlbumDetailModal({ album, onClose, onDeleteCategory, onDeleteImage, onA
                 </div>
                 <p className="text-sm font-semibold" style={{ color: 'var(--gray-500)' }}>No photos in this album</p>
                 <button
-                  onClick={() => (fileInputRef as any)[0]?.click()}
+                   onClick={() => onOpenUploadModal(album)}
                   className="px-4 py-2 rounded-xl text-xs font-bold text-white"
                   style={{ background: 'var(--blue)' }}>
                   + Add Photos
@@ -223,7 +198,7 @@ function AlbumDetailModal({ album, onClose, onDeleteCategory, onDeleteImage, onA
 
                 {/* Add more tile */}
                 <button
-                  onClick={() => (fileInputRef as any)[0]?.click()}
+                  onClick={() => onOpenUploadModal(album)}
                   className="aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-all hover:border-blue-400 hover:bg-blue-50"
                   style={{ borderColor: 'var(--gray-200)' }}
                 >
@@ -235,19 +210,7 @@ function AlbumDetailModal({ album, onClose, onDeleteCategory, onDeleteImage, onA
           </div>
 
           {/* Hidden file input */}
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            className="hidden"
-            onChange={e => {
-              if (e.target.files?.length) {
-                onAddImages(album, e.target.files);
-                e.target.value = '';
-              }
-            }}
-          />
+        
         </div>
       </div>
 
@@ -337,6 +300,7 @@ export default function AdminGalleryPage() {
   const [activeAlbum, setActiveAlbum]     = useState<Album | null>(null);
   const [deletingId, setDeletingId]       = useState<string | null>(null);
   const [addingImages, setAddingImages]   = useState(false);
+  const [uploadForAlbum, setUploadForAlbum] = useState<Album | null>(null);
 
   const fetchImages = useCallback(async () => {
     try {
@@ -383,7 +347,7 @@ export default function AdminGalleryPage() {
     if (!confirm(`Delete "${img.title}"?`)) return;
     setDeletingId(img.reference_id);
     try {
-      await AdminService.deleteGallery(img.reference_id);
+      await AdminService.deleteSinglePhoto(img.reference_id);
       setImages(prev => prev.filter(i => i.reference_id !== img.reference_id));
       toast.success('Photo deleted.');
     } catch {
@@ -398,7 +362,7 @@ export default function AdminGalleryPage() {
     if (!confirm(`Delete the entire "${album.category.name}" album and all its photos? This cannot be undone.`)) return;
     try {
       // Delete all images in parallel
-      await Promise.all(album.images.map(img => AdminService.deleteGallery(img.reference_id)));
+      await AdminService.deleteGalleryCategory(album.category.reference_id)
       setImages(prev => prev.filter(i => i.category.reference_id !== album.category.reference_id));
       setActiveAlbum(null);
       toast.success(`Album "${album.category.name}" deleted.`);
@@ -520,27 +484,35 @@ export default function AdminGalleryPage() {
 
       {/* Album detail modal */}
       {syncedActiveAlbum && (
-        <AlbumDetailModal
-          album={syncedActiveAlbum}
-          onClose={() => setActiveAlbum(null)}
-          onDeleteCategory={handleDeleteCategory}
-          onDeleteImage={handleDeleteImage}
-          onAddImages={handleAddImages}
-          deletingId={deletingId}
-          addingImages={addingImages}
-        />
-      )}
+  <AlbumDetailModal
+    album={syncedActiveAlbum}
+    onClose={() => setActiveAlbum(null)}
+    onDeleteCategory={handleDeleteCategory}
+    onDeleteImage={handleDeleteImage}
+    onOpenUploadModal={(album) => {
+      setUploadForAlbum(album);   // ← remember which album
+      setShowUploadModal(true);
+    }}
+    deletingId={deletingId}
+  />
+)}
 
       {/* Upload / create new gallery modal */}
       {showUploadModal && (
-        <GalleryModal
-          isOpen
-          item={null}
-          onClose={() => setShowUploadModal(false)}
-          onSave={async (fd) => { await handleSave(fd); setShowUploadModal(false); }}
-          fetchCategories={fetchCategories}
-        />
-      )}
+  <GalleryModal
+    isOpen
+    item={uploadForAlbum ? {          // ← pre-fill category
+      category: uploadForAlbum.category,
+    } : null}
+    onClose={() => { setShowUploadModal(false); setUploadForAlbum(null); }}
+    onSave={async (fd) => {
+      await handleSave(fd);
+      setShowUploadModal(false);
+      setUploadForAlbum(null);
+    }}
+    fetchCategories={fetchCategories}
+  />
+)}
     </AdminGuard>
   );
 }
