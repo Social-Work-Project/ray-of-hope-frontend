@@ -27,7 +27,7 @@ interface DataTableProps<T> {
   serverPagination?: boolean; // Whether to use server-side or client-side pagination
 }
 
-export function DataTable<T extends { id?: string; reference_id?: string; order_id?:string }>({
+export function DataTable<T extends { id?: string; user_id?: string; }>({
   data = [],
   columns,
   currentPage,
@@ -148,7 +148,7 @@ export function DataTable<T extends { id?: string; reference_id?: string; order_
               </TableRow>
             ) : (
               displayData.map((item) => {
-                const rowKey = item.id || item.reference_id || item.order_id || Math.random().toString();
+                const rowKey = item.id || item.user_id|| Math.random().toString();
                 return (
                   <TableRow key={rowKey} className="hover:bg-muted/30">
                     {columns.map((column) => (

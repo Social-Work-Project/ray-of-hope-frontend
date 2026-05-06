@@ -143,10 +143,12 @@ export interface TeamResponse {
 }
 
 export interface User {
-  reference_id: string;
+  user_id: string;
   full_name: string;
+  username: string;
   email: string;
   is_admin: boolean;
+  is_super_admin: boolean;
   is_banned: boolean;
   avatar?: string;
   date_joined: string;
@@ -216,3 +218,5 @@ export interface BankData {
   account_type: string;
   qr_code: string | null;
 }
+
+

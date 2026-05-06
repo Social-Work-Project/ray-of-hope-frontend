@@ -62,6 +62,7 @@ export const AdminService = {
 
   //Users
   getAllUsers: async () => api.get("/controlpanel/users/"),
+  createUser: async (data: any) => api.post("/controlpanel/users/create/", data),
   banUser: async (id: string) => api.post(`/users/${id}/ban/`),
   unbanUser: async (id: string) => api.post(`/users/${id}/unban/`),
 
@@ -188,4 +189,9 @@ export const AdminService = {
       headers: { "Content-Type": "multipart/form-data" },
     });
   },
+
+
+
+  //User Management
+
 };
