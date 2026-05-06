@@ -181,3 +181,38 @@ export interface TestimonialsResponse {
   message: string;
   is_active: string;
 }
+
+export interface HomeData {
+  hero_title: string;
+  hero_subtitle: string;
+  year_of_establishment: string;
+  active_programs: string;
+  children_in_hostel: string;
+  families_reached: string;
+}
+
+export interface AboutData {
+  mission_statement: string;
+  vision_statement: string;
+}
+
+export interface ContactData {
+  phones: string[];
+  emails: string[];
+  address: string;
+}
+
+export interface UpiData {
+  upi_ids: string[];
+  qr_code: string | null;
+}
+
+export interface BankData {
+  bank_name: string;
+  account_holder_name: string;
+  account_number: string;
+  ifsc_code: string;
+  branch_name: string;
+  account_type: string;
+  qr_code: string | null;
+}
