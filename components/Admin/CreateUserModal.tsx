@@ -1,26 +1,33 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { X, Loader2, UserPlus } from "lucide-react";
+import { X, Loader2, UserPlus, EyeIcon, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { AdminService } from "@/services/adminService";
+import { User } from "@/types";
 
 // ── Schema ────────────────────────────────────────────────────────────────────
 
 const schema = z.object({
-  first_name:   z.string().max(50).optional().or(z.literal("")),
-  last_name:    z.string().max(50).optional().or(z.literal("")),
-  email:        z.string().email("Enter a valid email"),
-  username:     z.string().min(3, "Username must be at least 3 characters").max(30),
-  phone_number: z.string().regex(/^\+?[0-9]{7,15}$/, "Enter a valid phone number").optional().or(z.literal("")),
-  password:     z.string().min(8, "Password must be at least 8 characters")
-                  .regex(/[A-Z]/, "Must contain an uppercase letter")
-                  .regex(/[0-9]/, "Must contain a number")
-                  .regex(/[^A-Za-z0-9]/, "Must contain a special character"),
-  is_admin:     z.boolean(),
-  is_active:    z.boolean(),
+  first_name: z.string().max(50).optional().or(z.literal("")),
+  last_name: z.string().max(50).optional().or(z.literal("")),
+  email: z.string().email("Enter a valid email"),
+  username: z.string().min(3, "Username must be at least 3 characters").max(30),
+  phone_number: z
+    .string()
+    .regex(/^\+?[0-9]{7,15}$/, "Enter a valid phone number")
+    .optional()
+    .or(z.literal("")),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[A-Z]/, "Must contain an uppercase letter")
+    .regex(/[0-9]/, "Must contain a number")
+    .regex(/[^A-Za-z0-9]/, "Must contain a special character"),
+  is_admin: z.boolean(),
+  is_active: z.boolean(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -31,6 +38,7 @@ interface Props {
   open: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  user: User | null
 }
 
 // ── Field component ───────────────────────────────────────────────────────────
@@ -51,7 +59,10 @@ function Field({
       <label className="text-xs font-medium" style={{ color: "var(--navy)" }}>
         {label}
         {optional && (
-          <span className="ml-1 font-normal" style={{ color: "var(--gray-400, #9ca3af)" }}>
+          <span
+            className="ml-1 font-normal"
+            style={{ color: "var(--gray-400, #9ca3af)" }}
+          >
             (optional)
           </span>
         )}
@@ -67,7 +78,7 @@ const inputClass =
 
 // ── Modal ─────────────────────────────────────────────────────────────────────
 
-export function CreateUserModal({ open, onClose, onSuccess }: Props) {
+export function CreateUserModal({ open,  user,  onClose, onSuccess }: Props) {
   const {
     register,
     handleSubmit,
@@ -76,37 +87,83 @@ export function CreateUserModal({ open, onClose, onSuccess }: Props) {
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      first_name:   "",
-      last_name:    "",
-      email:        "",
-      username:     "",
+      first_name: "",
+      last_name: "",
+      email: "",
+      username: "",
       phone_number: "",
-      password:     "",
-      is_admin:     true,
-      is_active:    true,
+      password: "",
+      is_admin: true,
+      is_active: true,
     },
   });
+  const isEdit = Boolean(user)
+const overlayRef = useRef<HTMLDivElement>(null);
+  const [showPassword, setShowPassword] = useState(false)
 
   // Reset form when modal closes
   useEffect(() => {
-    if (!open) reset();
-  }, [open, reset]);
+  if (!open) return;
+  if (!user) {
+    reset({ first_name: '', last_name: '', email: '', username: "", phone_number: "", password:"", is_admin: true, is_active: true });
+    return;
+  }
+
+  // Small defer to ensure testimonial is populated
+  const u = user as any;
+  reset({
+    first_name: u.first_name ?? '',
+    last_name: u.last_name ?? '',
+    email: u.email ?? '',
+    username: u.username ?? "", // handle both key names
+    phone_number: u.phone_number ?? "",
+    password: u.password ?? "",
+    is_admin: u.is_admin ?? true,
+    is_active: u.is_active ?? true,
+  });
+}, [open, user, reset]);
+
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (e.target !== overlayRef.current) return;
+    onClose();
+  };
+
+    useEffect(() => {
+      if (!open) return;
+      const handler = (e: KeyboardEvent) => {
+        if (e.key !== 'Escape') return;
+        onClose();
+      };
+      window.addEventListener('keydown', handler);
+      return () => window.removeEventListener('keydown', handler);
+    }, [open, onClose]);
+  
+    useEffect(() => {
+      document.body.style.overflow = open ? 'hidden' : '';
+      return () => { document.body.style.overflow = ''; };
+    }, [open]);
 
   const onSubmit = async (values: FormValues) => {
     try {
       // Strip empty optional strings before sending
       const payload = {
         ...values,
-        first_name:   values.first_name   || undefined,
-        last_name:    values.last_name    || undefined,
+        first_name: values.first_name || undefined,
+        last_name: values.last_name || undefined,
         phone_number: values.phone_number || undefined,
       };
+      if(isEdit) {
+        await AdminService.updateUser(user?.user_id || "", payload)
+      } else {
       await AdminService.createUser(payload);
       toast.success("User created successfully!");
+      }
       onSuccess();
       onClose();
     } catch (err: any) {
-      toast.error(err?.response?.data?.message ?? err.message ?? "Failed to create user");
+      toast.error(
+        err?.response?.data?.message ?? err.message ?? "Failed to create user",
+      );
     }
   };
 
@@ -117,7 +174,9 @@ export function CreateUserModal({ open, onClose, onSuccess }: Props) {
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ background: "rgba(0,0,0,0.45)" }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       {/* Modal card */}
       <div
@@ -133,7 +192,10 @@ export function CreateUserModal({ open, onClose, onSuccess }: Props) {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-800/10">
               <UserPlus size={16} className="text-green-800" />
             </div>
-            <h2 className="text-base font-bold" style={{ color: "var(--navy)" }}>
+            <h2
+              className="text-base font-bold"
+              style={{ color: "var(--navy)" }}
+            >
               Create New User
             </h2>
           </div>
@@ -147,15 +209,22 @@ export function CreateUserModal({ open, onClose, onSuccess }: Props) {
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="px-6 py-5 space-y-4">
-
           {/* Name row */}
           <div className="grid grid-cols-2 gap-3">
-            <Field label="First Name" error={errors.first_name?.message} optional>
+            <Field
+              label="First Name"
+              error={errors.first_name?.message}
+              optional
+            >
               <input
                 {...register("first_name")}
                 placeholder="John"
                 className={inputClass}
-                style={{ borderColor: errors.first_name ? "#ef4444" : "var(--gray-200, #e5e7eb)" }}
+                style={{
+                  borderColor: errors.first_name
+                    ? "#ef4444"
+                    : "var(--gray-200, #e5e7eb)",
+                }}
               />
             </Field>
             <Field label="Last Name" error={errors.last_name?.message} optional>
@@ -163,7 +232,11 @@ export function CreateUserModal({ open, onClose, onSuccess }: Props) {
                 {...register("last_name")}
                 placeholder="Doe"
                 className={inputClass}
-                style={{ borderColor: errors.last_name ? "#ef4444" : "var(--gray-200, #e5e7eb)" }}
+                style={{
+                  borderColor: errors.last_name
+                    ? "#ef4444"
+                    : "var(--gray-200, #e5e7eb)",
+                }}
               />
             </Field>
           </div>
@@ -175,7 +248,11 @@ export function CreateUserModal({ open, onClose, onSuccess }: Props) {
               type="email"
               placeholder="john@example.com"
               className={inputClass}
-              style={{ borderColor: errors.email ? "#ef4444" : "var(--gray-200, #e5e7eb)" }}
+              style={{
+                borderColor: errors.email
+                  ? "#ef4444"
+                  : "var(--gray-200, #e5e7eb)",
+              }}
             />
           </Field>
 
@@ -185,35 +262,57 @@ export function CreateUserModal({ open, onClose, onSuccess }: Props) {
               {...register("username")}
               placeholder="john_doe123"
               className={inputClass}
-              style={{ borderColor: errors.username ? "#ef4444" : "var(--gray-200, #e5e7eb)" }}
+              style={{
+                borderColor: errors.username
+                  ? "#ef4444"
+                  : "var(--gray-200, #e5e7eb)",
+              }}
             />
           </Field>
 
           {/* Phone */}
-          <Field label="Phone Number" error={errors.phone_number?.message} optional>
+          <Field
+            label="Phone Number"
+            error={errors.phone_number?.message}
+            optional
+          >
             <input
               {...register("phone_number")}
               placeholder="+91 9800000000"
               className={inputClass}
-              style={{ borderColor: errors.phone_number ? "#ef4444" : "var(--gray-200, #e5e7eb)" }}
+              style={{
+                borderColor: errors.phone_number
+                  ? "#ef4444"
+                  : "var(--gray-200, #e5e7eb)",
+              }}
             />
           </Field>
 
           {/* Password */}
           <Field label="Password" error={errors.password?.message}>
+            <div className="relative">
             <input
               {...register("password")}
-              type="password"
+              type={showPassword? "text": "password"}
               placeholder="Min 8 chars, uppercase, number, symbol"
               className={inputClass}
-              style={{ borderColor: errors.password ? "#ef4444" : "var(--gray-200, #e5e7eb)" }}
+              style={{
+                borderColor: errors.password
+                  ? "#ef4444"
+                  : "var(--gray-200, #e5e7eb)",
+              }}
             />
+            {showPassword ? <EyeIcon onClick={() => setShowPassword(!showPassword)} className="absolute top-2 right-2.5" /> : <EyeOff onClick={() => setShowPassword(!showPassword)} className="absolute top-2 right-2.5"/>}
+            </div>
           </Field>
 
           {/* Toggles */}
-          <div className="grid grid-cols-2 gap-3 rounded-xl border p-4" style={{ borderColor: "var(--gray-100)" }}>
+          <div
+            className="grid grid-cols-2 gap-3 rounded-xl border p-4"
+            style={{ borderColor: "var(--gray-100)" }}
+          >
             <Toggle label="Admin Access" name="is_admin" register={register} />
-            <Toggle label="Active"       name="is_active" register={register} />
+            <Toggle label="Active" name="is_active" register={register} />
           </div>
 
           {/* Actions */}
@@ -222,7 +321,10 @@ export function CreateUserModal({ open, onClose, onSuccess }: Props) {
               type="button"
               onClick={onClose}
               className="rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-50"
-              style={{ borderColor: "var(--gray-200, #e5e7eb)", color: "var(--navy)" }}
+              style={{
+                borderColor: "var(--gray-200, #e5e7eb)",
+                color: "var(--navy)",
+              }}
             >
               Cancel
             </button>
@@ -232,9 +334,13 @@ export function CreateUserModal({ open, onClose, onSuccess }: Props) {
               className="flex items-center gap-2 rounded-lg bg-green-800 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-60"
             >
               {isSubmitting ? (
-                <><Loader2 size={14} className="animate-spin" /> Creating...</>
+                <>
+                  <Loader2 size={14} className="animate-spin" /> Creating...
+                </>
               ) : (
-                <><UserPlus size={14} /> Create User</>
+                <>
+                  <UserPlus size={14} /> Create User
+                </>
               )}
             </button>
           </div>

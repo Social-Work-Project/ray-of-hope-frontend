@@ -63,8 +63,9 @@ export const AdminService = {
   //Users
   getAllUsers: async () => api.get("/controlpanel/users/"),
   createUser: async (data: any) => api.post("/controlpanel/users/create/", data),
-  banUser: async (id: string) => api.post(`/users/${id}/ban/`),
-  unbanUser: async (id: string) => api.post(`/users/${id}/unban/`),
+  updateUser: async (id: string, data: any) => api.patch(`/controlpanel/users/${id}/update/`, data),
+  banunbanUser: async (id: string, data: any) => api.post(`/controlpanel/users/${id}/ban-unban/`, data),
+  deleteUser: async (id: string) => api.post(`/controlpanel/users/${id}/delete/`),
 
   //Cms
   getHomePageContent: async () => api.get("/cms/homepage-content/"),
