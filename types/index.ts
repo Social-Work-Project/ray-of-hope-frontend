@@ -264,4 +264,27 @@ export interface EventVolunteerDetail {
   updated_at: string;
 }
 
+export interface PhoneNumber {
+  phone_number: string;
+  reference_id: string;
+}
+
+export interface ContactResponse {
+  reference_id: string,
+  address: string,
+  phone_numbers: PhoneNumber[],
+  emails: {
+    reference_id: string;
+    email: string
+  }[]
+}
+
+export interface UPIResponse {
+  reference_id: string;
+  qr_code: string;
+  upi_ids: {
+    reference_id: string;
+    upi_id: string;
+  }[]
+}
 

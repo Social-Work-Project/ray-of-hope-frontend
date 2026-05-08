@@ -1,6 +1,9 @@
 "use client"
+import { WebsiteService } from '@/services/websiteService';
+import { ContactData, ContactResponse } from '@/types';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 
 const quickLinks = [
@@ -22,6 +25,20 @@ const involvedLinks = [
 export function Footer() {
     const pathname = usePathname();
     const isAdmin = pathname.startsWith('/admin');
+    const [contacts, setContacts] = useState<ContactResponse | null>(null)
+
+    useEffect(() => {
+      fetchContacts()
+    }, [])
+
+    const fetchContacts = async () => {
+      try {
+        const res = await WebsiteService.getContantDetails()
+        setContacts(res.data.results || null)
+      } catch(err){
+        console.log(err)
+      }
+    }
 
   if (isAdmin) return null;
   return (
@@ -77,14 +94,22 @@ export function Footer() {
           <div>
             <h4 className="text-white text-sm font-bold mb-4">Contact</h4>
             <div className="space-y-2 text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
-              <p>Sukhani Busty, Nagrakata<br />Dist. Jalpaiguri, WB – 735225</p>
-              <a href="tel:+919641361319" className="block hover:text-yellow-400 transition-colors">
-                +91 9641361319
-              </a>
-              <a href="mailto:nagarkatarayofhopesociety@gmail.com"
+              <p>{contacts?.address}</p>
+            
+                {contacts?.phone_numbers.map(p => 
+                 <a key={p.reference_id}  href={`tel:${p.phone_number}`} className="block hover:text-yellow-400 transition-colors">
+                    {p.phone_number}
+                  </a>
+                
+                  )}
+              
+              {contacts?.emails.map(e =>
+            
+              <a key={e.reference_id} href={`mailto:${e.email}`}
                 className="block hover:text-yellow-400 transition-colors break-all text-xs">
-                nagarkatarayofhopesociety@gmail.com
+                {e.email}
               </a>
+               )}
             </div>
           </div>
         </div>

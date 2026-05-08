@@ -3,12 +3,11 @@ import Link from 'next/link';
 import { PageHero, Card, Badge } from '@/components/ui';
 import { useEffect, useState } from 'react';
 import { EventResponse } from '@/types';
-import { AdminService } from '@/services/adminService';
 import { useRouter } from 'next/navigation';
 import { formatToAmPm } from '@/helpers/timeFormatter';
 import { WebsiteService } from '@/services/websiteService';
 
-function parseEventDate(dateStr: string) {
+export function parseEventDate(dateStr: string) {
   const date = new Date(dateStr);
   return {
     day: date.getUTCDate().toString(),

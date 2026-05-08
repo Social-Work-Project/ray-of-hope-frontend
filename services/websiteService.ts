@@ -13,7 +13,17 @@ export const WebsiteService = {
     //gallery
     getGalleryCategory: async () => api.get("/events/gallery-category/list/"),
     getAllGallery: async () => api.get("/events/gallery/list/"),
-    getGalleryByCategories: async (id: string) => api.get(`/events/gallery/category/${id}/`)
+    getGalleryByCategories: async (id: string) => api.get(`/events/gallery/category/${id}/`),
+
+
+    //website contents
+    getAboutPageContent: async () => api.get("/cms/aboutpage-content/"),
+    getHomePageContent: async () => api.get("/cms/homepage-content/"),
+    getContantDetails: async () => api.get("/cms/contact-details/"),
+    getUPIDetails: async () => api.get("/cms/upi-payments/"),
+    getBankAccountDetails: async () => api.get("/cms/bank-account-details/"),
+    getTestimonials: async () => api.get("/events/testimonial/list/?is_active=true"),
+    getTeamMembers: async () => api.get("/events/team/list/?is_active=true")
 
 
 }

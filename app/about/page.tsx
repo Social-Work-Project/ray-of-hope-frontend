@@ -1,6 +1,9 @@
 "use client";
 import Image from 'next/image';
 import { PageHero, Card, SectionHeader } from '@/components/ui';
+import { useEffect, useState } from 'react';
+import { AboutData, HomeData } from '@/types';
+import { WebsiteService } from '@/services/websiteService';
 
 const timeline = [
   { year: 'August 2008', title: 'Society Founded', desc: 'Arjun Biswakarma and six founding members sign the Memorandum of Association at Sukhani Busty, Nagrakata.' },
@@ -13,6 +16,21 @@ const timeline = [
 ];
 
 export default function AboutPage() {
+
+    const [homeContent, setHomeContent] = useState<HomeData | null>(null);
+    const [aboutContent, setAboutContent] = useState<AboutData | null>(null)
+  
+    useEffect(() => {
+      Promise.all([
+        WebsiteService.getHomePageContent()
+          .then((res) => setHomeContent(res.data.results || null))
+          .catch(console.error),
+  
+        WebsiteService.getAboutPageContent()
+          .then((res) => setAboutContent(res.data.results || null))
+          .catch(console.error),
+      ]);
+    }, []);
     
   return (
     <div className='pt-18.25'>
@@ -43,7 +61,7 @@ export default function AboutPage() {
               <Image src="/images/dooars.jpeg" alt="Dooars" width={700} height={280} className="w-full object-cover h-70 " />
             </div>
             <div className="grid grid-cols-2 gap-4">
-              {[{ n: "16+", l: "Children Housed" }, { n: "500+", l: "Families Aided" }].map((s, i) => (
+              {[{ n: homeContent?.children_in_hostel || "16+", l: "Children Housed" }, { n: homeContent?.families_reached || "500+", l: "Families Aided" }].map((s, i) => (
                 <Card key={i} className="p-6 text-center" hover={false}>
                   <div className="text-3xl font-black mb-1 text-blue-900 font-['Playfair_Display',serif]" >{s.n}</div>
                   <div className="text-sm text-gray-600" >{s.l}</div>
@@ -61,13 +79,13 @@ export default function AboutPage() {
             <div className="bg-white rounded-2xl p-10 shadow-sm border-t-4" style={{ borderColor: "var(--blue)", borderLeft: "1px solid var(--gray-100)", borderRight: "1px solid var(--gray-100)", borderBottom: "1px solid var(--gray-100)" }}>
               <div className="text-3xl mb-4">🎯</div>
               <h3 className="text-2xl font-bold mb-4" style={{ color: "var(--navy)" }}>Our Mission</h3>
-              <p className="text-sm leading-loose mb-4" style={{ color: "var(--gray-600)" }}>To transform people and the society through Social Awareness Programmes, Humanitarian and Charity work, Health Programmes, Medical Services, Educational Support, Sports & Youth programmes — reaching the unprivileged, the left-out, and those with no one to help, support or hope.</p>
+              <p className="text-sm leading-loose mb-4" style={{ color: "var(--gray-600)" }}>{aboutContent?.mission_statement || "To transform people and the society through Social Awareness Programmes, Humanitarian and Charity work, Health Programmes, Medical Services, Educational Support, Sports & Youth programmes — reaching the unprivileged, the left-out, and those with no one to help, support or hope."}</p>
               <blockquote className="text-lg pl-5 border-l-4 mt-4" style={{ borderColor: "var(--accent)", color: "var(--accent)", fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic" }}>&ldquo;To be Hope for No Hope&rdquo;</blockquote>
             </div>
             <div className="bg-white rounded-2xl p-10 shadow-sm border-t-4" style={{ borderColor: "var(--accent)", borderLeft: "1px solid var(--gray-100)", borderRight: "1px solid var(--gray-100)", borderBottom: "1px solid var(--gray-100)" }}>
               <div className="text-3xl mb-4">🌟</div>
               <h3 className="text-2xl font-bold mb-4" style={{ color: "var(--navy)" }}>Our Vision</h3>
-              <p className="text-sm leading-loose mb-4" style={{ color: "var(--gray-600)" }}>To create a platform where every individual — regardless of caste, poverty, or circumstance — can stand on their own feet with dignity. We dream of opening a Free Primary School, Vocational Training Centre, Youth Centre, and Old Age Home across the Dooars region.</p>
+              <p className="text-sm leading-loose mb-4" style={{ color: "var(--gray-600)" }}>{aboutContent?.vision_statement || "To create a platform where every individual — regardless of caste, poverty, or circumstance — can stand on their own feet with dignity. We dream of opening a Free Primary School, Vocational Training Centre, Youth Centre, and Old Age Home across the Dooars region."}</p>
               <div className="text-xs px-4 py-3 rounded-xl" style={{ background: "var(--gray-50)", color: "var(--gray-600)" }}>Planned: Education · Health · Vocational Skills · Sports · Youth Centre · Agriculture · Old Age Home</div>
             </div>
           </div>

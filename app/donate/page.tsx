@@ -1,32 +1,10 @@
+"use client"
 import Link from 'next/link';
+import Image from 'next/image';
 import { PageHero } from '@/components/ui';
-
-const methods = [
-  {
-    icon: "🏦", title: "Bank Transfer / NEFT",
-    desc: "Transfer directly to our registered bank account. Safest and most transparent donation method.",
-    detail: ["Account Name: Nagarkata Ray of Hope Society", "Contact us for full bank details."],
-    action: "Request Bank Details", href: "/contact"
-  },
-  {
-    icon: "📱", title: "UPI / Google Pay",
-    desc: "Instant UPI transfer — quickest way to contribute from anywhere in India.",
-    detail: ["UPI Contact: +91 9641361319", "Search by mobile number on any UPI app"],
-    action: null, href: null
-  },
-  {
-    icon: "🌐", title: "PayPal / International",
-    desc: "For international donors who wish to contribute from outside India.",
-    detail: ["Email: nagarkatarayofhopesociety@gmail.com", "Contact us to arrange PayPal transfer"],
-    action: "Email Us", href: "mailto:nagarkatarayofhopesociety@gmail.com"
-  },
-  {
-    icon: "📦", title: "Donate in Kind",
-    desc: "We accept clothes, food, stationery, school bags, medicines and other essentials.",
-    detail: ["Drop-off: Sukhani Busty, P.O./P.S. Nagrakata", "Dist. Jalpaiguri, WB – 735225"],
-    action: "Call to Coordinate", href: "tel:+919641361319"
-  },
-];
+import { useEffect, useMemo, useState } from 'react';
+import { WebsiteService } from '@/services/websiteService';
+import {  BankData, ContactResponse, UpiData, UPIResponse } from '@/types';
 
 const fundUse = [
   { pct: "40%", label: "Children's Hostel", desc: "Food, clothing, school materials, utilities" },
@@ -36,6 +14,28 @@ const fundUse = [
 ];
 
 export default function DonatePage() {
+  const [bank, setBank] = useState<BankData | null>(null);
+  const [upi, setUpi] = useState<UPIResponse | null>(null);
+  const [contacts, setContacts] = useState<ContactResponse | null>(null);
+
+  useEffect(() => {
+    Promise.all([
+      WebsiteService.getBankAccountDetails()
+        .then((res) => setBank(res.data.results || null))
+        .catch(console.error),
+      WebsiteService.getUPIDetails()
+        .then((res) => setUpi(res.data.results || null))
+        .catch(console.error),
+      WebsiteService.getContantDetails()
+        .then((res) => setContacts(res.data.results || null))
+        .catch(console.error),
+    ]);
+  }, []);
+
+  const primaryEmail = contacts?.emails?.[0]?.email ?? "nagarkatarayofhopesociety@gmail.com";
+  const primaryPhone = contacts?.phone_numbers?.[0]?.phone_number ?? "+91 9641361319";
+  const dropoffAddress = contacts?.address ?? "Sukhani Busty, P.O./P.S. Nagrakata, Dist. Jalpaiguri, WB – 735225";
+
   return (
     <div className='pt-18.25'>
       <section className="py-20 text-center" style={{ background: "linear-gradient(135deg, var(--navy), #1B5CA8)", color: "white" }}>
@@ -58,21 +58,94 @@ export default function DonatePage() {
           <div className="section-label">Donation Methods</div>
           <h2 className="text-3xl font-black mb-3" style={{ color: "var(--navy)" }}>Ways to Donate</h2>
           <p className="text-base mb-12 max-w-xl" style={{ color: "var(--gray-600)" }}>All contributions are used 100% for our community programmes.</p>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {methods.map((m, i) => (
-              <div key={i} className="bg-white rounded-2xl p-8 shadow-sm border transition-all hover:-translate-y-1 hover:shadow-md text-center" style={{ borderColor: "var(--gray-100)" }}>
-                <div className="text-4xl mb-4">{m.icon}</div>
-                <h3 className="text-xl font-bold mb-2" style={{ color: "var(--navy)" }}>{m.title}</h3>
-                <p className="text-sm leading-relaxed mb-4" style={{ color: "var(--gray-600)" }}>{m.desc}</p>
-                <div className="px-4 py-3 rounded-xl text-sm font-medium mb-5 text-left" style={{ background: "var(--gray-50)", color: "var(--navy)" }}>
-                  {m.detail.map((d, j) => <div key={j}>{d}</div>)}
+
+            {/* BANK TRANSFER */}
+            {bank && (
+              <div className="bg-white rounded-2xl p-8 shadow-sm border transition-all hover:-translate-y-1 hover:shadow-md text-center" style={{ borderColor: "var(--gray-100)" }}>
+                <div className="text-4xl mb-4">🏦</div>
+                <h3 className="text-xl font-bold mb-2" style={{ color: "var(--navy)" }}>Bank Transfer / NEFT</h3>
+                <p className="text-sm leading-relaxed mb-4" style={{ color: "var(--gray-600)" }}>
+                  Transfer directly to our registered bank account. Safest and most transparent donation method.
+                </p>
+                <div className="px-4 py-3 rounded-xl text-sm text-left space-y-1 mb-5" style={{ background: "var(--gray-50)", color: "var(--navy)" }}>
+                  <div><span className="font-semibold">Account Name:</span> {bank.account_holder_name}</div>
+                  <div><span className="font-semibold">Bank:</span> {bank.bank_name}</div>
+                  <div><span className="font-semibold">Account No:</span> {bank.account_number}</div>
+                  <div><span className="font-semibold">IFSC:</span> {bank.ifsc_code}</div>
+                  <div><span className="font-semibold">Branch:</span> {bank.branch_name}</div>
+                  <div><span className="font-semibold">Type:</span> {bank.account_type}</div>
                 </div>
-                {m.action && m.href && (
-                  <a href={m.href} className="inline-flex w-full justify-center px-5 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all hover:bg-blue-50"
-                    style={{ borderColor: "var(--blue)", color: "var(--blue)" }}>{m.action}</a>
+                {bank.qr_code && (
+                  <div className="flex flex-col items-center gap-2 mt-4">
+                    <p className="text-xs font-semibold" style={{ color: "var(--gray-600)" }}>Scan to Pay</p>
+                    <Image src={bank.qr_code} alt="Bank QR Code" width={140} height={140} className="rounded-xl border" style={{ borderColor: "var(--gray-200)" }} />
+                  </div>
                 )}
               </div>
-            ))}
+            )}
+
+            {/* UPI */}
+            {upi && (
+              <div className="bg-white rounded-2xl p-8 shadow-sm border transition-all hover:-translate-y-1 hover:shadow-md text-center" style={{ borderColor: "var(--gray-100)" }}>
+                <div className="text-4xl mb-4">📱</div>
+                <h3 className="text-xl font-bold mb-2" style={{ color: "var(--navy)" }}>UPI / Google Pay</h3>
+                <p className="text-sm leading-relaxed mb-4" style={{ color: "var(--gray-600)" }}>
+                  Instant UPI transfer — quickest way to contribute from anywhere in India.
+                </p>
+                <div className="px-4 py-3 rounded-xl text-sm text-left mb-5 space-y-1" style={{ background: "var(--gray-50)", color: "var(--navy)" }}>
+                  {upi.upi_ids.map((u) => (
+                    <div key={u.reference_id}>
+                      <span className="font-semibold">UPI ID:</span> {u.upi_id}
+                    </div>
+                  ))}
+                  <div className="text-xs mt-1" style={{ color: "var(--gray-600)" }}>Search by UPI ID on any UPI app</div>
+                </div>
+                {upi.qr_code && (
+                  <div className="flex flex-col items-center gap-2 mt-4">
+                    <p className="text-xs font-semibold" style={{ color: "var(--gray-600)" }}>Scan to Donate</p>
+                    <Image src={upi.qr_code} alt="UPI QR Code" width={140} height={140} className="rounded-xl border" style={{ borderColor: "var(--gray-200)" }} />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* INTERNATIONAL / PAYPAL — static, uses contact email */}
+            <div className="bg-white rounded-2xl p-8 shadow-sm border transition-all hover:-translate-y-1 hover:shadow-md text-center" style={{ borderColor: "var(--gray-100)" }}>
+              <div className="text-4xl mb-4">🌐</div>
+              <h3 className="text-xl font-bold mb-2" style={{ color: "var(--navy)" }}>PayPal / International</h3>
+              <p className="text-sm leading-relaxed mb-4" style={{ color: "var(--gray-600)" }}>
+                For international donors who wish to contribute from outside India.
+              </p>
+              <div className="px-4 py-3 rounded-xl text-sm text-left mb-5 space-y-1" style={{ background: "var(--gray-50)", color: "var(--navy)" }}>
+                <div><span className="font-semibold">Email:</span> {primaryEmail}</div>
+                <div className="text-xs" style={{ color: "var(--gray-600)" }}>Contact us to arrange PayPal transfer</div>
+              </div>
+              <a href={`mailto:${primaryEmail}`}
+                className="inline-flex w-full justify-center px-5 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all hover:bg-blue-50"
+                style={{ borderColor: "var(--blue)", color: "var(--blue)" }}>
+                Email Us
+              </a>
+            </div>
+
+            {/* DONATE IN KIND — fully static */}
+            <div className="bg-white rounded-2xl p-8 shadow-sm border transition-all hover:-translate-y-1 hover:shadow-md text-center" style={{ borderColor: "var(--gray-100)" }}>
+              <div className="text-4xl mb-4">📦</div>
+              <h3 className="text-xl font-bold mb-2" style={{ color: "var(--navy)" }}>Donate in Kind</h3>
+              <p className="text-sm leading-relaxed mb-4" style={{ color: "var(--gray-600)" }}>
+                We accept clothes, food, stationery, school bags, medicines and other essentials.
+              </p>
+              <div className="px-4 py-3 rounded-xl text-sm text-left mb-5 space-y-1" style={{ background: "var(--gray-50)", color: "var(--navy)" }}>
+                <div><span className="font-semibold">Drop-off:</span> {dropoffAddress}</div>
+              </div>
+              <a href={`tel:${primaryPhone}`}
+                className="inline-flex w-full justify-center px-5 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all hover:bg-blue-50"
+                style={{ borderColor: "var(--blue)", color: "var(--blue)" }}>
+                Call to Coordinate
+              </a>
+            </div>
+
           </div>
 
           <div className="mt-10 p-7 rounded-2xl border flex gap-5 items-start" style={{ background: "var(--accent-soft)", borderColor: "rgba(244,164,53,0.3)" }}>
