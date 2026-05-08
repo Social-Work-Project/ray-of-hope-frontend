@@ -1,7 +1,8 @@
 'use client';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { submitEventVolunteer } from '@/lib/data';
+import { WebsiteService } from '@/services/websiteService';
+import { useState } from 'react';
 
 type FormData = { name: string; email: string; phone: string; skills: string; notes: string; };
 const inputCls = "w-full px-4 py-3 border rounded-xl text-sm outline-none transition-all focus:ring-2 focus:ring-blue-200";
@@ -10,10 +11,28 @@ const labelCls = "block text-sm font-semibold mb-1.5";
 export function EventVolunteerForm({ eventId, eventTitle }: { eventId: string; eventTitle: string }) {
   const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm<FormData>();
 
+
   const onSubmit = async (data: FormData) => {
-    const result = await submitEventVolunteer({ ...data, eventId });
-    if (result.success) { toast.success('You are registered as a volunteer for this event!'); reset(); }
-    else toast.error('Something went wrong. Please try again.');
+    const payload = {
+      full_name: data.name,
+      email: data.email,
+      phone: data.phone,
+      skills: data.skills,
+      message: data.notes
+    }
+
+    try {
+      await WebsiteService.createEventVolunteer(eventId, payload)
+      
+      toast.success("Application submitted successfully!")
+      reset()
+
+    } catch(err) {
+      console.log(err)
+      toast.error("Unable to submit application. Try Again!")
+    }
+   
+  
   };
 
   return (
@@ -44,7 +63,7 @@ export function EventVolunteerForm({ eventId, eventTitle }: { eventId: string; e
           <textarea {...register('notes')} rows={3} placeholder="Any additional information" className={inputCls} style={{ borderColor: 'var(--gray-200)', resize: 'vertical' }} />
         </div>
         <button type="submit" disabled={isSubmitting}
-          className="px-8 py-3 rounded-xl font-bold text-sm transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60"
+          className="px-8 py-3 rounded-xl font-bold text-sm transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60 cursor-pointer"
           style={{ background: 'var(--blue)', color: 'white' }}>
           {isSubmitting ? 'Registering...' : 'Register as Volunteer'}
         </button>

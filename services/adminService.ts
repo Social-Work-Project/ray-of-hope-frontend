@@ -25,6 +25,14 @@ export const AdminService = {
   deleteVolunteer: async (id: string) =>
     api.delete(`/volunteers/${id}/delete/`),
 
+
+  //Events Volunteers
+  getAllEventVolunteers: async () => api.get("/events/event-application/list/"),
+  updateEventVolunteersStatus : async (id:string, status: "approved" | "rejected") => api.patch(`/events/event-application/${id}/status/`, { status }),
+  getEventVolunteerDetails: async (id: string) => api.get(`events/event-application/${id}/`),
+  deleteEventVolunteer: async (id: string) => async (id: string) =>
+    api.delete(`/events/event-application/${id}/delete/`),
+
   //Team Members
   getAllTeams: async () => api.get("/events/team/list/"),
   createTeam: async (data: FormData) =>

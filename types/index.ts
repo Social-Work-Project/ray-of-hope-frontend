@@ -101,7 +101,7 @@ export interface EventResponse {
   location: string;
   organizer_name: string;
   volunteers_needed: number;
-  registered_volunterrs_count: number;
+  registered_volunteers_count: number;
   status: 'published' | 'draft';
   created_at: string;
 }
@@ -217,6 +217,51 @@ export interface BankData {
   branch_name: string;
   account_type: string;
   qr_code: string | null;
+}
+
+export interface EventVolunteer {
+  reference_id: string;
+  event_id: string;
+  event_name: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  status: "pending" | "approved" | "rejected";
+  skills: string;
+  created_at: string;
+}
+
+export interface EventVolunteerDetail {
+  reference_id: string;
+  event: number;
+  event_details: {
+    reference_id: string;
+    name: string;
+    description: string;
+    category: string;
+    logo: string | null;
+    event_date: string;
+    start_time: string;
+    end_time: string;
+    location: string;
+    organizer_name: string;
+    phone_number: string;
+    email: string;
+    volunteers_needed: number;
+    registered_volunteers_count: number;
+    status: string;
+    schedule: { reference_id: string; time: string; title: string }[];
+    created_at: string;
+    updated_at: string;
+  };
+  full_name: string;
+  email: string;
+  phone: string;
+  message: string;
+  skills: string;
+  status: "pending" | "approved" | "rejected";
+  created_at: string;
+  updated_at: string;
 }
 
 

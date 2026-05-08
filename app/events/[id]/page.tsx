@@ -116,10 +116,14 @@ export default function EventDetailPage() {
                 </div>
               ))}
             </div>
-            <EventVolunteerForm
-              eventId={event.reference_id}
-              eventTitle={event.name}
-            />
+           {
+  event.registered_volunteers_count < event.volunteers_needed && (
+    <EventVolunteerForm
+      eventId={event.reference_id}
+      eventTitle={event.name}
+    />
+  )
+}
           </div>
 
           <div className="space-y-5">

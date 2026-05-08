@@ -289,7 +289,7 @@ const overlayRef = useRef<HTMLDivElement>(null);
           </Field>
 
           {/* Password */}
-          <Field label="Password" error={errors.password?.message}>
+         {!isEdit && <Field label="Password" error={errors.password?.message}>
             <div className="relative">
             <input
               {...register("password")}
@@ -304,7 +304,7 @@ const overlayRef = useRef<HTMLDivElement>(null);
             />
             {showPassword ? <EyeIcon onClick={() => setShowPassword(!showPassword)} className="absolute top-2 right-2.5" /> : <EyeOff onClick={() => setShowPassword(!showPassword)} className="absolute top-2 right-2.5"/>}
             </div>
-          </Field>
+          </Field>}
 
           {/* Toggles */}
           <div
@@ -320,7 +320,7 @@ const overlayRef = useRef<HTMLDivElement>(null);
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-50"
+              className="rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-50 cursor-pointer"
               style={{
                 borderColor: "var(--gray-200, #e5e7eb)",
                 color: "var(--navy)",
@@ -331,15 +331,15 @@ const overlayRef = useRef<HTMLDivElement>(null);
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex items-center gap-2 rounded-lg bg-green-800 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-60"
+              className="flex items-center gap-2 rounded-lg bg-green-800 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-60 cursor-pointer"
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 size={14} className="animate-spin" /> Creating...
+                  <Loader2 size={14} className="animate-spin" /> {isEdit ? "updating...": "Creating..."}
                 </>
               ) : (
                 <>
-                  <UserPlus size={14} /> Create User
+                  <UserPlus size={14} /> {isEdit? "Edit User" : "Create User"}
                 </>
               )}
             </button>

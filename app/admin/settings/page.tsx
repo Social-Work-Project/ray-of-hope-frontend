@@ -29,8 +29,8 @@ export default function Settings() {
       const res = await AuthService.getProfile() as any;
       console.log("Profile data:", res);
       setProfileData({
-        name: res.data.username,
-        email: res.data.email,
+        name: res.data.results.username || "",
+        email: res.data.results.email || "",
       });
     }
     fetchProfile();

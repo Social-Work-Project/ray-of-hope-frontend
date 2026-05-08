@@ -9,8 +9,8 @@ import { AuthService } from "@/services/authService";
 const navItems = [
   { href: "/admin/dashboard", icon: "📊", label: "Dashboard" },
   { href: "/admin/events", icon: "📅", label: "Manage Events" },
-  { href: "/admin/volunteers", icon: "👥", label: "Volunteers" },
-  // { href: '/admin/donations', icon: '💰', label: 'Donations' },
+  { href: "/admin/volunteers", icon: "👥", label: "General Volunteers" },
+  {href: "/admin/event-volunteers", icon: "📢", label: "Event Volunteers"},
   { href: "/admin/testimonials", icon: "💬", label: "Testimonials" },
   { href: "/admin/gallery", icon: "🖼️", label: "Gallery" },
   { href: "/admin/team", icon: "👤", label: "Team Members" },
