@@ -288,3 +288,7 @@ export interface UPIResponse {
   }[]
 }
 
+export interface DashboardData {
+  total_events: number;
+
+}

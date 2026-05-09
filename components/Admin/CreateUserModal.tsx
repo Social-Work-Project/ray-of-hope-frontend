@@ -15,11 +15,6 @@ const schema = z.object({
   last_name: z.string().max(50).optional().or(z.literal("")),
   email: z.string().email("Enter a valid email"),
   username: z.string().min(3, "Username must be at least 3 characters").max(30),
-  phone_number: z
-    .string()
-    .regex(/^\+?[0-9]{7,15}$/, "Enter a valid phone number")
-    .optional()
-    .or(z.literal("")),
   password: z
     .string()
     .min(8, "Password must be at least 8 characters")
@@ -91,7 +86,6 @@ export function CreateUserModal({ open,  user,  onClose, onSuccess }: Props) {
       last_name: "",
       email: "",
       username: "",
-      phone_number: "",
       password: "",
       is_admin: true,
       is_active: true,
@@ -105,7 +99,7 @@ const overlayRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
   if (!open) return;
   if (!user) {
-    reset({ first_name: '', last_name: '', email: '', username: "", phone_number: "", password:"", is_admin: true, is_active: true });
+    reset({ first_name: '', last_name: '', email: '', username: "", password:"", is_admin: true, is_active: true });
     return;
   }
 
@@ -116,7 +110,6 @@ const overlayRef = useRef<HTMLDivElement>(null);
     last_name: u.last_name ?? '',
     email: u.email ?? '',
     username: u.username ?? "", // handle both key names
-    phone_number: u.phone_number ?? "",
     password: u.password ?? "",
     is_admin: u.is_admin ?? true,
     is_active: u.is_active ?? true,
@@ -150,7 +143,6 @@ const overlayRef = useRef<HTMLDivElement>(null);
         ...values,
         first_name: values.first_name || undefined,
         last_name: values.last_name || undefined,
-        phone_number: values.phone_number || undefined,
       };
       if(isEdit) {
         await AdminService.updateUser(user?.user_id || "", payload)
@@ -270,23 +262,6 @@ const overlayRef = useRef<HTMLDivElement>(null);
             />
           </Field>
 
-          {/* Phone */}
-          <Field
-            label="Phone Number"
-            error={errors.phone_number?.message}
-            optional
-          >
-            <input
-              {...register("phone_number")}
-              placeholder="+91 9800000000"
-              className={inputClass}
-              style={{
-                borderColor: errors.phone_number
-                  ? "#ef4444"
-                  : "var(--gray-200, #e5e7eb)",
-              }}
-            />
-          </Field>
 
           {/* Password */}
          {!isEdit && <Field label="Password" error={errors.password?.message}>

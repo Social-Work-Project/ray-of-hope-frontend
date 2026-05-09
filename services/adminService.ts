@@ -2,6 +2,9 @@ import { api } from "./apiClient";
 import { AboutData, BankData, ContactData, HomeData, UpiData } from "@/types";
 
 export const AdminService = {
+
+  //Dashboard
+  getDashbaordStats: async () => api.get("/events/admin-dashboard/stats/"),
   // Events
   getEvents: async () => api.get("/events/list/"),
   createEvent: async (data: FormData) =>

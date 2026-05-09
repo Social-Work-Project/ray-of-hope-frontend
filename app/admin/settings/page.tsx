@@ -20,7 +20,9 @@ import { AuthService } from "@/services/authService";
 
 export default function Settings() {
   const [profileData, setProfileData] = useState({
-    name: "",
+    first_name: "",
+    last_name: "",
+    username: "",
     email: "",
   });
 
@@ -29,16 +31,23 @@ export default function Settings() {
       const res = await AuthService.getProfile() as any;
       console.log("Profile data:", res);
       setProfileData({
-        name: res.data.results.username || "",
+        username: res.data.results.username || "",
         email: res.data.results.email || "",
+        first_name: res.data.results.first_name || "",
+        last_name: res.data.results.last_name || "",
       });
     }
     fetchProfile();
   }, []);
 
-  const handleProfileUpdate = (e: React.FormEvent) => {
+  const handleProfileUpdate = async  (e: React.FormEvent) => {
     e.preventDefault();
+    try {
+    await AuthService.changeProfile(profileData)
     toast.success("Your profile has been updated successfully.");
+    } catch(err) {
+      toast.error("Error updating profile. Try Again!")
+    }
   };
 
   return (
@@ -63,13 +72,33 @@ export default function Settings() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleProfileUpdate} className="space-y-4">
+                 <div className="space-y-2">
+                <Label htmlFor="name">First Name</Label>
+                <Input
+                  id="name"
+                  value={profileData.first_name}
+                  onChange={(e) =>
+                    setProfileData({ ...profileData, first_name: e.target.value })
+                  }
+                />
+              </div>
+                 <div className="space-y-2">
+                <Label htmlFor="name">Last Name</Label>
+                <Input
+                  id="name"
+                  value={profileData.last_name}
+                  onChange={(e) =>
+                    setProfileData({ ...profileData, last_name: e.target.value })
+                  }
+                />
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="name">Username</Label>
                 <Input
                   id="name"
-                  value={profileData.name}
+                  value={profileData.username}
                   onChange={(e) =>
-                    setProfileData({ ...profileData, name: e.target.value })
+                    setProfileData({ ...profileData, username: e.target.value })
                   }
                 />
               </div>

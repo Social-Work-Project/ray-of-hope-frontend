@@ -10,5 +10,6 @@ export const AuthService = {
     //profile
     getProfile: async () => api.get("/auth/profile/"),
     changeUserPassword: async (data: { old_password: string, new_password: string, confirm_password: string }) => api.post("/auth/change-password/", data),
+    changeProfile: async (data: any) => api.patch("/auth/profile/update/", data)
 
 }
