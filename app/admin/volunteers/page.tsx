@@ -491,7 +491,7 @@ export default function AdminVolunteersPage() {
                           {v.full_name}
                         </td>
                         <td
-                          className="px-5 py-3 max-w-[160px] truncate"
+                          className="px-5 py-3 max-w-40 truncate"
                           style={{ color: "var(--gray-600)" }}
                         >
                           {v.email}
@@ -503,7 +503,7 @@ export default function AdminVolunteersPage() {
                           {v.city}
                         </td>
                         <td
-                          className="px-5 py-3 max-w-[140px] truncate"
+                          className="px-5 py-3 max-w-35 truncate"
                           style={{ color: "var(--gray-600)" }}
                         >
                           {v.skills}
