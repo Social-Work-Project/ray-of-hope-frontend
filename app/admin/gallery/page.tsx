@@ -31,7 +31,7 @@ function Lightbox({ images, index, onClose, onChange }: {
 
   return (
     <div
-      className="fixed inset-0 z-[99999] flex items-center justify-center"
+      className="fixed inset-0 z-99999 flex items-center justify-center"
       style={{ background: 'rgba(0,0,0,0.94)', backdropFilter: 'blur(10px)' }}
       onClick={onClose}
     >
@@ -96,7 +96,7 @@ function AlbumDetailModal({ album, onClose, onDeleteCategory, onDeleteImage, onO
   return (
     <>
       <div
-        className="fixed inset-0 z-[9998] flex items-end sm:items-center justify-center p-0 sm:p-4"
+        className="fixed inset-0 z-9998 flex items-end sm:items-center justify-center p-0 sm:p-4"
         style={{ background: 'rgba(11,31,58,0.65)', backdropFilter: 'blur(8px)' }}
         onClick={onClose}
       >
