@@ -4,9 +4,48 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { AuthService } from "@/services/authService";
 
-// ── Auth context — lets any child read the current role ───────────────────────
+type AdminRole = "admin" | "super_admin" | null;
+
+let cachedRole: AdminRole = null;
+let hasCheckedAuth = false;
+let authCheckPromise: Promise<AdminRole> | null = null;
+
+const normalizeRole = (role?: string): Exclude<AdminRole, null> => {
+  const raw = (role ?? "admin").toLowerCase().replace(/\s+/g, "_");
+  return raw === "super_admin" ? "super_admin" : "admin";
+};
+
+const getAdminRole = async () => {
+  if (hasCheckedAuth) return cachedRole;
+
+  authCheckPromise ??= AuthService.checkAuth()
+    .then((res) => {
+      const results = res?.data?.results;
+
+      if (!results?.isAuthenticated) {
+        cachedRole = null;
+        return null;
+      }
+
+      cachedRole = normalizeRole(results.role);
+      return cachedRole;
+    })
+    .finally(() => {
+      hasCheckedAuth = true;
+      authCheckPromise = null;
+    });
+
+  return authCheckPromise;
+};
+
+export function clearAdminAuthCache() {
+  cachedRole = null;
+  hasCheckedAuth = false;
+  authCheckPromise = null;
+}
+
 interface AuthCtx {
-  role: "admin" | "super_admin" | null;
+  role: AdminRole;
 }
 
 const AdminAuthContext = createContext<AuthCtx>({ role: null });
@@ -15,41 +54,59 @@ export function useAdminAuth() {
   return useContext(AdminAuthContext);
 }
 
-// ── Guard ─────────────────────────────────────────────────────────────────────
 export default function AdminGuard({ children }: { children: React.ReactNode }) {
-  const router   = useRouter();
+  const router = useRouter();
   const pathname = usePathname();
+  const isLoginPage = pathname === "/admin/login";
 
-  const [loading, setLoading] = useState(true);
-  const [role, setRole]       = useState<"admin" | "super_admin" | null>(null);
+  const [loading, setLoading] = useState(!isLoginPage && !hasCheckedAuth);
+  const [role, setRole] = useState<AdminRole>(cachedRole);
 
   useEffect(() => {
+    let cancelled = false;
+
     const checkAuth = async () => {
-      if (pathname === "/admin/login") {
+      if (isLoginPage) {
         setLoading(false);
         return;
       }
-      try {
-        const res = await AuthService.checkAuth();
-        const results = res?.data?.results;
 
-        if (!results?.isAuthenticated) {
+      if (hasCheckedAuth) {
+        setRole(cachedRole);
+        setLoading(false);
+
+        if (!cachedRole) router.replace("/admin/login");
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        const nextRole = await getAdminRole();
+        if (cancelled) return;
+
+        if (!nextRole) {
           router.replace("/admin/login");
           return;
         }
 
-        // Normalise role string — API may return "super admin" or "super_admin"
-        const raw: string = (results.role ?? "admin").toLowerCase().replace(/\s+/g, "_");
-        setRole(raw === "super_admin" ? "super_admin" : "admin");
+        setRole(nextRole);
       } catch {
+        if (cancelled) return;
+        clearAdminAuthCache();
         router.replace("/admin/login");
         return;
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-      setLoading(false);
     };
 
     checkAuth();
-  }, [pathname, router]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoginPage, router]);
 
   if (loading) {
     return (

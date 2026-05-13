@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { clsx } from "clsx";
 import { toast } from "sonner";
 import { AuthService } from "@/services/authService";
-import { useAdminAuth } from "@/components/Admin/AdminGuard";
+import { clearAdminAuthCache, useAdminAuth } from "@/components/Admin/AdminGuard";
 
 const mainNavItems = [
   { href: "/admin/dashboard",        icon: "📊", label: "Dashboard" },
@@ -45,6 +45,7 @@ export function AdminSidebar() {
   const handleLogout = async () => {
     try {
       await AuthService.logout();
+      clearAdminAuthCache();
       toast.success("Logged out successfully");
       router.push("/admin/login");
     } catch {

@@ -4,8 +4,10 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAdminStore } from "@/store/adminStore";
 import AdminGuard from "@/components/Admin/AdminGuard";
-import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { ArrowBigLeft, ArrowLeft, ArrowLeftIcon, EyeIcon, EyeOffIcon } from "lucide-react";
 import ForgotPasswordFlow from "@/components/Admin/ForgotPasswordFlow"; // adjust path as needed
+import Image from "next/image";
+import Link from "next/link";
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
@@ -66,17 +68,9 @@ export default function AdminLoginPage() {
               {/* ── Logo + heading ── */}
               <div className="text-center mb-8">
                 <div
-                  className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
-                  style={{ background: "var(--blue)" }}
+                  className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-blue-600"
                 >
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="w-7 h-7 fill-none stroke-white"
-                    strokeWidth={2}
-                  >
-                    <path d="M12 2 L4 8 L4 20 L20 20 L20 8 Z" strokeLinejoin="round" />
-                    <circle cx="12" cy="14" r="3" />
-                  </svg>
+                 <Image src="/logo.png" alt="logo" width={100} height={100} />
                 </div>
                 <h2 className="text-2xl font-black text-(--navy)">Admin Panel</h2>
                 <p className="text-sm mt-1" style={{ color: "var(--gray-400)" }}>
@@ -147,13 +141,15 @@ export default function AdminLoginPage() {
                   {loading ? "Signing in..." : "Sign In to Dashboard"}
                 </button>
               </form>
-
+              <div className="flex flex-col gap-4 justify-between pt-4">
               <p
                 onClick={() => setShowForgotModal(true)}
-                className="pt-4 hover:text-blue-600 text-gray-600 cursor-pointer hover:underline text-sm"
+                className="hover:text-blue-600 text-gray-600 cursor-pointer hover:underline text-sm"
               >
                 Forgot Password?
               </p>
+              <Link href="/" className="flex items-center gap-2 hover:underline hover:text-blue-600"><ArrowLeftIcon className="w-4 h-4" />Go Back</Link>
+              </div>
             </>
           )}
         </div>
