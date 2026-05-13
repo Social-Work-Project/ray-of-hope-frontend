@@ -6,6 +6,7 @@ import { clsx } from "clsx";
 import { toast } from "sonner";
 import { AuthService } from "@/services/authService";
 import { clearAdminAuthCache, useAdminAuth } from "@/components/Admin/AdminGuard";
+import Image from "next/image";
 
 const mainNavItems = [
   { href: "/admin/dashboard",        icon: "📊", label: "Dashboard" },
@@ -94,11 +95,8 @@ export function AdminSidebar() {
       {/* Header */}
       <div className="px-5 py-4 flex items-center justify-between shrink-0" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "var(--sky)" }}>
-            <svg viewBox="0 0 24 24" className="w-5 h-5 fill-none stroke-white" strokeWidth={2}>
-              <path d="M12 2 L4 8 L4 20 L20 20 L20 8 Z" strokeLinejoin="round" />
-              <circle cx="12" cy="14" r="3" />
-            </svg>
+          <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: "var(--sky)" }}>
+           <Image src="/logo.png" alt="logo" width={100} height={100}/>
           </div>
           <div className="min-w-0">
             <div className="text-white text-sm font-bold truncate" style={{ fontFamily: "'Playfair Display', serif" }}>Admin Panel</div>

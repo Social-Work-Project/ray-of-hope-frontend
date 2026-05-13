@@ -46,7 +46,7 @@ const eventSchema = z.object({
   volunteers_needed: z
     .number()
     .min(1, "At least 1 volunteer required")
-    .max(500, "Cannot exceed 500"),
+    .max(2000, "Cannot exceed 2000"),
   status: z.enum(["published", "draft"]),
   schedules: z
     .array(scheduleItemSchema)
@@ -490,7 +490,7 @@ export function EventModal({
                   />
                   <input
                     {...register("name")}
-                    placeholder="e.g. Tech Volunteer Meetup 2027"
+                    placeholder="e.g. Annual Health Awareness Camp"
                     className={inp + " pl-10"}
                     style={{
                       borderColor: errors.name ? "#ef4444" : "var(--gray-200)",
@@ -511,7 +511,7 @@ export function EventModal({
                     />
                     <input
                       {...register("category")}
-                      placeholder="e.g. technology"
+                      placeholder="e.g. medical"
                       className={inp + " pl-10"}
                       style={{
                         borderColor: errors.category
@@ -598,7 +598,7 @@ export function EventModal({
                   />
                   <input
                     {...register("location")}
-                    placeholder="e.g. Pokhara"
+                    placeholder="e.g. Nagrakata Tea Garden Area, Jalpaiguri"
                     className={inp + " pl-10"}
                     style={{
                       borderColor: errors.location
@@ -624,7 +624,7 @@ export function EventModal({
                     />
                     <input
                       {...register("organizer_name")}
-                      placeholder="e.g. Tech Nepal"
+                      placeholder="e.g. Arjun Biswakarma"
                       className={inp + " pl-10"}
                       style={{
                         borderColor: errors.organizer_name
@@ -648,7 +648,7 @@ export function EventModal({
                       })}
                       type="number"
                       min={1}
-                      max={500}
+                      max={2000}
                       placeholder="20"
                       className={inp + " pl-10"}
                       style={{
@@ -695,7 +695,7 @@ export function EventModal({
                     <input
                       {...register("email")}
                       type="email"
-                      placeholder="info@technepal.com"
+                      placeholder="nagarkatarayofhopesociety@gmail.com"
                       className={inp + " pl-10"}
                       style={{
                         borderColor: errors.email
@@ -716,7 +716,7 @@ export function EventModal({
                 <textarea
                   {...register("description")}
                   rows={4}
-                  placeholder="A community-driven tech meetup focused on networking and volunteering..."
+                  placeholder="Our annual health camp brings together volunteers, medical professionals..."
                   className={inp}
                   style={{
                     borderColor: errors.description
