@@ -1,7 +1,5 @@
 'use client';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
-import { submitContactForm } from '@/lib/data';
 
 type FormData = { name: string; email: string; phone?: string; subject: string; message: string; };
 const inputCls = "w-full px-4 py-3 border rounded-xl text-sm outline-none transition-all focus:ring-2 focus:ring-blue-200";
@@ -11,9 +9,9 @@ export function ContactForm() {
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormData>();
 
   const onSubmit = async (data: FormData) => {
-    const result = await submitContactForm(data);
-    if (result.success) { toast.success('Message sent! We will respond soon.'); reset(); }
-    else toast.error('Something went wrong. Please try again.');
+    // const result = await submitContactForm(data);
+    // if (result.success) { toast.success('Message sent! We will respond soon.'); reset(); }
+    // else toast.error('Something went wrong. Please try again.');
   };
 
   return (
