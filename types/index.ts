@@ -292,3 +292,11 @@ export interface DashboardData {
   total_events: number;
 
 }
+
+export interface ImagesData {
+  reference_id: string;
+  home_hero_image: string;
+  home_story_image: string;
+  about_foundation_image: string;
+  about_content_image: string;
+}

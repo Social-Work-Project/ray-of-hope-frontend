@@ -204,6 +204,14 @@ export const AdminService = {
 
 
 
-  //User Management
+  //Image Content
+  getImagesContent: () => api.get("/cms/image-content/"),
+  updateImagesContent: (data: FormData) => api.patch("/cms/image-content/", data, {
+    headers: {"Content-Type": "multipart/form-data"}
+  }),
+  createImagesContent: (data: FormData) => api.post("/cms/image-content/", data, {
+    headers: {"Content-Type": "multipart/form-data"}
+  }),
+  
 
 };

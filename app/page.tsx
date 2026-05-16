@@ -5,14 +5,16 @@ import { PROGRAMS } from '@/lib/data';
 import { StatCard, Card } from '@/components/ui';
 import { useEffect, useMemo, useState } from 'react';
 import { WebsiteService } from '@/services/websiteService';
-import { EventResponse, HomeData, TestimonialsResponse } from '@/types';
+import { EventResponse, HomeData, ImagesData, TestimonialsResponse } from '@/types';
 import { parseEventDate } from './events/page';
 import { formatToAmPm } from '@/helpers/timeFormatter';
+import { parseDynamicTitle } from '@/helpers/parseDynamicTitle';
 
 export default function HomePage() {
   const [events, setEvents] = useState<EventResponse[]>([]);
   const [testimonials, setTestimonials] = useState<TestimonialsResponse[]>([]);
   const [homeContent, setHomeContent] = useState<HomeData | null>(null);
+  const [images, setImages] = useState<ImagesData | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -26,6 +28,10 @@ export default function HomePage() {
 
       WebsiteService.getTestimonials()
         .then((res) => setTestimonials(res.data.results || []))
+        .catch(console.error),
+
+        WebsiteService.getImages()
+        .then((res) => setImages(res.data.results || []))
         .catch(console.error),
     ]);
   }, []);
@@ -73,7 +79,7 @@ export default function HomePage() {
             }}
           />
           <Image
-            src="/images/hero-image.jpeg"
+            src={images?.home_hero_image || "/images/hero-image.jpeg"}
             alt="Community"
             fill
             className="object-cover opacity-40"
@@ -92,26 +98,42 @@ export default function HomePage() {
             >
               🌟 Hope for No Hope · Since {yearFounded}
             </div>
-            <h1
-              className="animate-fade-up-1 text-white font-black mb-5"
-              style={{ fontSize: "clamp(2.4rem,5vw,3.6rem)", lineHeight: 1.1 }}
-            >
-              Bringing{" "}
-              <em style={{ color: "var(--accent)", fontStyle: "italic" }}>
-                Hope
-              </em>{" "}
-              to
-              <br />
-              the Hearts of Dooars
-            </h1>
+            {homeContent?.hero_title ? (
+              <h1
+                className="animate-fade-up-1 text-white font-black mb-5"
+                style={{
+                  fontSize: "clamp(2.4rem,5vw,3.6rem)",
+                  lineHeight: 1.1,
+                }}
+              >
+                {parseDynamicTitle(homeContent.hero_title, {
+                  color: "var(--accent)",
+                  fontStyle: "italic",
+                })}
+              </h1>
+            ) : (
+              <h1
+                className="animate-fade-up-1 text-white font-black mb-5"
+                style={{
+                  fontSize: "clamp(2.4rem,5vw,3.6rem)",
+                  lineHeight: 1.1,
+                }}
+              >
+                Bringing{" "}
+                <em style={{ color: "var(--accent)", fontStyle: "italic" }}>
+                  Hope
+                </em>{" "}
+                to
+                <br />
+                the Hearts of Dooars
+              </h1>
+            )}
             <p
               className="animate-fade-up-2 text-base md:text-lg mb-9 max-w-xl"
               style={{ color: "rgba(255,255,255,0.8)", lineHeight: 1.7 }}
             >
-              Nagarkata Ray of Hope Society serves the underprivileged
-              communities of West Bengal&apos;s Dooars region — providing
-              shelter, education, healthcare and rescue to those who need it
-              most.
+              {homeContent?.hero_subtitle ||
+                "Nagarkata Ray of Hope Society serves the underprivileged communities of West Bengal's Dooars region — providing shelter, education, healthcare and rescue to those who need it most."}
             </p>
             <div className="animate-fade-up-3 flex justify-center md:justify-start gap-3 flex-wrap">
               <Link
@@ -193,8 +215,8 @@ export default function HomePage() {
             >
               Founded by Arjun Biswakarma in the Dooars valley of West Bengal,
               Nagarkata Ray of Hope Society began in a corner of his own home in{" "}
-              {yearFounded}. Today it is registered under West Bengal Society Act 1961
-              and NGO Darpan (NITI Aayog).
+              {yearFounded}. Today it is registered under West Bengal Society
+              Act 1961 and NGO Darpan (NITI Aayog).
             </p>
             <Link
               href="/about"
@@ -206,8 +228,9 @@ export default function HomePage() {
           </div>
           <div className="rounded-2xl overflow-hidden shadow-2xl">
             <Image
-              src="/images/community-work.jpeg"
+              src={images?.home_story_image || "/images/community-work.jpeg"}
               alt="Community work"
+              sizes=''
               width={700}
               height={380}
               className="w-full object-cover"
@@ -228,7 +251,10 @@ export default function HomePage() {
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             <StatCard num={childrenInHostel} label="Children in Hostel" />
-            <StatCard num={familiesReached} label="Families Aided in COVID Relief" />
+            <StatCard
+              num={familiesReached}
+              label="Families Aided in COVID Relief"
+            />
             <StatCard num="100+" label="Youth Trained in Sports" />
             <StatCard num="7" label="Board Members Serving" />
           </div>
@@ -355,7 +381,8 @@ export default function HomePage() {
                             className="text-xs"
                             style={{ color: "var(--gray-400)" }}
                           >
-                            🕐 {formatToAmPm(e.start_time)} - {formatToAmPm(e.end_time)}
+                            🕐 {formatToAmPm(e.start_time)} -{" "}
+                            {formatToAmPm(e.end_time)}
                           </span>
                         </div>
                       </div>

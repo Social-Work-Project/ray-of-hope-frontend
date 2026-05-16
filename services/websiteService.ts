@@ -23,7 +23,11 @@ export const WebsiteService = {
     getUPIDetails: async () => api.get("/cms/upi-payments/"),
     getBankAccountDetails: async () => api.get("/cms/bank-account-details/"),
     getTestimonials: async () => api.get("/events/testimonial/list/?is_active=true"),
-    getTeamMembers: async () => api.get("/events/team/list/?is_active=true")
+    getTeamMembers: async () => api.get("/events/team/list/?is_active=true"),
+    getImages: async () => api.get("/cms/image-content/"),
+
+    //Contact
+    sendMessage: async (data: any) => api.post("/cms/contact-message/", data),
 
 
 }

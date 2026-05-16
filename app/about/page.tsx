@@ -2,7 +2,7 @@
 import Image from 'next/image';
 import { PageHero, Card, SectionHeader } from '@/components/ui';
 import { useEffect, useState } from 'react';
-import { AboutData, HomeData } from '@/types';
+import { AboutData, HomeData, ImagesData } from '@/types';
 import { WebsiteService } from '@/services/websiteService';
 
 const timeline = [
@@ -19,15 +19,20 @@ export default function AboutPage() {
 
     const [homeContent, setHomeContent] = useState<HomeData | null>(null);
     const [aboutContent, setAboutContent] = useState<AboutData | null>(null)
+    const [images, setImages] = useState<ImagesData | null>(null)
   
     useEffect(() => {
       Promise.all([
         WebsiteService.getHomePageContent()
           .then((res) => setHomeContent(res.data.results || null))
           .catch(console.error),
-  
+
         WebsiteService.getAboutPageContent()
           .then((res) => setAboutContent(res.data.results || null))
+          .catch(console.error),
+
+        WebsiteService.getImages()
+          .then((res) => setImages(res.data.results || null))
           .catch(console.error),
       ]);
     }, []);
@@ -58,7 +63,7 @@ export default function AboutPage() {
           </div>
           <div>
             <div className="rounded-2xl overflow-hidden shadow-xl mb-5">
-              <Image src="/images/dooars.jpeg" alt="Dooars" width={700} height={280} className="w-full object-cover h-70 " />
+              <Image src={images?.about_foundation_image || "/images/dooars.jpeg"} alt="Dooars" width={700} height={280} className="w-full object-cover h-70 " />
             </div>
             <div className="grid grid-cols-2 gap-4">
               {[{ n: homeContent?.children_in_hostel || "16+", l: "Children Housed" }, { n: homeContent?.families_reached || "500+", l: "Families Aided" }].map((s, i) => (
@@ -121,7 +126,7 @@ export default function AboutPage() {
           </div>
           <div>
             <div className="rounded-2xl overflow-hidden shadow-xl mb-5">
-              <Image src="https://images.unsplash.com/photo-1591711436-50c7fee96a8a?w=700&q=80" alt="Tea garden" width={700} height={280} className="w-full object-cover" style={{ height: 280 }} />
+              <Image src={images?.about_content_image || "/images/tea-garden.jpg"} alt="Tea garden" width={700} height={280} className="w-full object-cover" style={{ height: 280 }} />
             </div>
             <div className="p-5 rounded-xl border" style={{ background: "var(--accent-soft)", borderColor: "rgba(244,164,53,0.3)" }}>
               <div className="font-bold mb-2 text-sm" style={{ color: "var(--navy)" }}>Key Statistics — Nagrakata Block</div>
