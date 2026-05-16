@@ -73,7 +73,7 @@ export default function HomePage() {
             }}
           />
           <Image
-            src="/images/home-image.jpeg"
+            src="/images/hero-image.jpeg"
             alt="Community"
             fill
             className="object-cover opacity-40"
