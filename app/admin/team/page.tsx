@@ -266,7 +266,7 @@ export default function AdminTeamPage() {
   const fetchTeams = async () => {
     try {
       const res = await AdminService.getAllTeams();
-      setTeams(res.data.results || []);
+      setTeams((res.data.results || []).slice().reverse());
     } catch {
       toast.error('Failed to fetch team members.');
     }
