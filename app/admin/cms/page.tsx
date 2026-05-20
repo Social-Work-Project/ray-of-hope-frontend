@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 // ── Defaults ──────────────────────────────────────────────────────────────────
 const D = {
   home:    { hero_title: "Bringing Hope to the Hearts of Dooars", hero_subtitle: "Nagarkata Ray of Hope Society serves the underprivileged communities of West Bengal's Dooars region.", children_in_hostel: "16+", families_reached: "500+", year_of_establishment: "2008", active_programs: "5+" },
-  about:   { mission_statement: "To be Hope for No Hope — reaching the unprivileged, the left-out, and those with no one to help.", vision_statement: "To create a platform where every individual can stand on their own feet with dignity." },
+  about:   { mission_statement: "To transform people and the society through Social Awareness Programmes, Humanitarian and Charity work, Health Programmes, Medical Services, Educational Support, Sports & Youth programmes — reaching the unprivileged, the left-out, and those with no one to help, support or hope.", vision_statement: "To create a platform where every individual — regardless of caste, poverty, or circumstance — can stand on their own feet with dignity. We dream of opening a Free Primary School, Vocational Training Centre, Youth Centre, and Old Age Home across the Dooars region." },
   contact: { phones: ["+91 9641361319"], emails: ["nagarkatarayofhopesociety@gmail.com"], address: "Sukhani Busty, Nagrakata, Jalpaiguri, WB – 735225" },
   upi:     { upi_ids: ["9641361319@upi"], qr_code: null },
   bank:    { bank_name: "", account_holder_name: "", account_number: "", ifsc_code: "", branch_name: "", account_type: "Savings", qr_code: null },
